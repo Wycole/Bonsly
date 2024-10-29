@@ -16,7 +16,7 @@ namespace lightwave {
 /// @brief The result of sampling a Camera.
 struct CameraSample {
     /// @brief The direction vector, pointing away from the camera.
-    Ray ray;
+    Ray ray;    // this structure is in math.hpp
 
     /// @brief The weight of the sample.
     Color weight;
