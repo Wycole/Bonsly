@@ -7,15 +7,20 @@ class Sphere : public Shape {
             NOT_IMPLEMENTED
         }
         bool intersect(const Ray &ray, Intersection &its, Sampler &rng) const override {
-            NOT_IMPLEMENTED
+            //NOT_IMPLEMENTED
+            PROFILE("SPHERE")
+
         }
-        Bounds getBoundingBox() const override { NOT_IMPLEMENTED
+        Bounds getBoundingBox() const override { 
+            //NOT_IMPLEMENTED
+            return Bounds(Point{ -1, -1, -1}, Point{ +1, +1, +1});
         }
         Point getCentroid() const override {
-            NOT_IMPLEMENTED
+            //NOT_IMPLEMENTED
+            return Point(0);
         }
         AreaSample sampleArea(Sampler &rng) const override {
-            NOT_IMPLEMENTED
+            NOT_IMPLEMENTED // leave it for 1.2.2
         }
         std::string toString() const override { 
             return "Sphere[]";

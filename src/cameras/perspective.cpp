@@ -63,10 +63,8 @@ public:
         // Create direction vector pointing to scaled point on z=1 plane
         // Create direction vector (needs to be normalized)
         float length = std::sqrt(scaled_x * scaled_x + scaled_y * scaled_y + 1.0f);
-        result.ray.direction ={
-            scaled_x / length,
-            scaled_y / length,
-            1.0f / length
+        result.ray.direction ={ 
+            scaled_x / length, scaled_y / length, 1.0f / length
         };
         
         // Transform ray to world coordinates
