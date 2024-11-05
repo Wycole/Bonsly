@@ -30,15 +30,15 @@ public:
         const float tan_fov = std::tan(fov * 0.5f * (M_PI / 180.0f));
         scale_x = tan_fov; // pre-compute scale vector, scale_x based on FOV
 
-        const float width        = m_resolution.x();
-        const float height       = m_resolution.y();
+        const float width = m_resolution.x();
+        const float height = m_resolution.y();
         const float aspect_ratio = width / height;
 
         // calculate x and y for direction Vector
-        if (fov_axis == "y") {
+        if (fov_axis == "y") {  
             scale_x = tan_fov * aspect_ratio;
             scale_y = tan_fov;
-        } else { // (default)
+        } else {    // (default)
             scale_x = tan_fov;
             scale_y = tan_fov / aspect_ratio;
         }
@@ -64,16 +64,22 @@ public:
         // Scale normalized coordinates by FOV factors
         const float scaled_x = normalized.x() * scale_x;
         const float scaled_y = normalized.y() * scale_y;
+        
+        // // Create direction vector pointing to scaled point on z=1 plane
+        // // Create direction vector (needs to be normalized)
+        // float length = std::sqrt(scaled_x * scaled_x + scaled_y * scaled_y + 1.0f);
+        // result.ray.direction ={ 
+        //     scaled_x / length, scaled_y / length, 1.0f / length
+        // };
 
-        // Create direction vector pointing to scaled point on z=1 plane
-        // Create direction vector (needs to be normalized)
         // Changed it so that we dont calculate the length and get the direction
         // We just get the ray direction, and normalize the ray at the end
-        result.ray.direction = { scaled_x, scaled_y, 1.0f };
+        result.ray.direction = {scaled_x, scaled_y, 1.0f};
 
+        
         // Transform ray to world coordinates
         result.ray = m_transform->apply(result.ray).normalized();
-
+        
         // // Set sample weight to 1
         result.weight = Color(1.0f);
 
