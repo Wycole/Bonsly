@@ -9,8 +9,7 @@ class NormalIntegrator: public SamplingIntegrator{
 public: 
 
     NormalIntegrator(const Properties &properties)
-        : SamplingIntegrator(properties) 
-        {
+        : SamplingIntegrator(properties) {
             remap = properties.get<bool>("remap", true);
         }
 
@@ -20,13 +19,11 @@ public:
         Intersection intersection = m_scene->intersect(ray, rng);
         Vector normal = intersection.wo;
  
+        if(remap) {     // remap == true, remap normals between [-1,1] to the interval [0,1]
         
-        if(remap) {        // remap == true, remap normals between [-1,1] to the interval [0,1]
-
             normal = (normal + Vector(1.0f, 1.0f, 1.0f)) / 2.0f;
 
         } else {
-            // intersect the ray against the scene and get the intersection information
             if(!intersection){    // remap == false && intersections occur
                 normal = {0, 0, 0};
             } else{     // remap == false && no intersection
