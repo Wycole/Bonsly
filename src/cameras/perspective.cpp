@@ -15,18 +15,20 @@ namespace lightwave {
 class Perspective : public Camera {
 
     // pre-computed values
-    float scale_x;  
-    float scale_y; 
+    float scale_x;
+    float scale_y;
 
 public:
     Perspective(const Properties &properties) : Camera(properties) {
-        
-        const float fov = properties.get<float>("fov");     // Get the value of FOV (in degree)
-        const std::string fov_axis = properties.get<std::string>("fovAxis", "x");   // set to x-axis if not specified
+
+        const float fov =
+            properties.get<float>("fov"); // Get the value of FOV (in degree)
+        const std::string fov_axis = properties.get<std::string>(
+            "fovAxis", "x"); // set to x-axis if not specified
 
         // convert degrees to radians: deg * (M_PI / 180.0f)
-        const float tan_fov = std::tan(fov * 0.5f * (M_PI / 180.0f));   
-        scale_x = tan_fov;    // pre-compute scale vector, scale_x based on FOV
+        const float tan_fov = std::tan(fov * 0.5f * (M_PI / 180.0f));
+        scale_x = tan_fov; // pre-compute scale vector, scale_x based on FOV
 
         const float width = m_resolution.x();
         const float height = m_resolution.y();
@@ -42,19 +44,22 @@ public:
         }
 
         // hints:
-        // * precompute any expensive operations here (most importantly trigonometric functions)
+        // * precompute any expensive operations here (most importantly
+        // trigonometric functions)
         // * use m_resolution to find the aspect ratio of the image
     }
 
     CameraSample sample(const Point2 &normalized, Sampler &rng) const override {
-    
+
         CameraSample result;
 
-        Vector direction = Vector(normalized.x() * scale_x, normalized.y() * scale_y, 1.0f);
+        Vector direction =
+            Vector(normalized.x() * scale_x, normalized.y() * scale_y, 1.0f);
 
         // in local camera coordinate, the origin of ray is always (0,0,0)
-        result.ray.origin = {0.0f, 0.0f, 0.0f};     // -> camera.hpp -> math.hpp for struct Ray
-        
+        result.ray.origin = { 0.0f, 0.0f, 0.0f }; // -> camera.hpp -> math.hpp
+                                                  // for struct Ray
+
         // Compute ray direction in local coordinates
         // Scale normalized coordinates by FOV factors
         const float scaled_x = normalized.x() * scale_x;
@@ -77,7 +82,7 @@ public:
         
         // // Set sample weight to 1
         result.weight = Color(1.0f);
-        
+
         return result;
 
         // hints:
@@ -86,13 +91,15 @@ public:
     }
 
     std::string toString() const override {
-        return tfm::format("Perspective[\n"
-                           "  width = %d,\n"
-                           "  height = %d,\n"
-                           "  transform = %s,\n"
-                           "]",
-                           m_resolution.x(), m_resolution.y(),
-                           indent(m_transform));
+        return tfm::format(
+            "Perspective[\n"
+            "  width = %d,\n"
+            "  height = %d,\n"
+            "  transform = %s,\n"
+            "]",
+            m_resolution.x(),
+            m_resolution.y(),
+            indent(m_transform));
     }
 };
 
