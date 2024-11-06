@@ -26,11 +26,9 @@ class TriangleMesh : public AccelerationStructure {
      * fewer than @code 3 * numTriangles @endcode vertices.
      */
     std::vector<Vertex> m_vertices;
-    /// @brief The file this mesh was loaded from, for logging and debugging
-    /// purposes.
+    /// @brief The file this mesh was loaded from, for logging and debugging purposes.
     std::filesystem::path m_originalPath;
-    /// @brief Whether to interpolate the normals from m_vertices, or report the
-    /// geometric normal instead.
+    /// @brief Whether to interpolate the normals from m_vertices, or report the geometric normal instead.
     bool m_smoothNormals;
 
 protected:
@@ -51,11 +49,22 @@ protected:
     }
 
     Bounds getBoundingBox(int primitiveIndex) const override {
-        NOT_IMPLEMENTED
+        //NOT_IMPLEMENTED
+        // look up math.hpp 526
+        Bounds box = Bounds::empty();
+        Vector3i triangle = m_triangles[primitiveIndex];
+
+        for (int i = 0; i < 3; ++i) {
+            const Vertex &vertex = m_vertices[triangle[i]];
+            box.extend(vertex.position);
+        }
+
+        return box;
     }
 
     Point getCentroid(int primitiveIndex) const override {
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+        return getBoundingBox(primitiveIndex).center();
     }
 
 public:
@@ -77,8 +86,7 @@ public:
     }
 
     AreaSample sampleArea(Sampler &rng) const override{
-        // only implement this if you need triangle mesh area light sampling for
-        // your rendering competition
+        // only implement this if you need triangle mesh area light sampling for your rendering competition
         NOT_IMPLEMENTED
     }
 
