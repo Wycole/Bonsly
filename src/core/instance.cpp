@@ -5,7 +5,13 @@
 
 namespace lightwave {
 
-void Instance::transformFrame(SurfaceEvent &surf, const Vector &wo) const {}
+void Instance::transformFrame(SurfaceEvent &surf, const Vector &wo) const {
+    surf.tangent       = surf.tangent.normalized();
+    surf.shadingNormal = m_transform->apply(surf.shadingNormal).normalized();
+    surf.shadingFrame().bitangent =
+        surf.shadingNormal.cross(surf.tangent).normalized();
+    m_transform->apply(wo);
+}
 
 inline void validateIntersection(const Intersection &its) {
     // use the following macros to make debugginer easier:
@@ -49,7 +55,14 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
 
     const float previousT = its.t;
     Ray localRay;
-    NOT_IMPLEMENTED
+    localRay = m_transform->inverse(worldRay);
+    its.t =
+        previousT * (localRay.direction.length() / worldRay.direction.length());
+    localRay = localRay.normalized();
+
+    // TODO
+    // transform ray into local space, finish everything and then call the
+    // transform frame
 
     // hints:
     // * transform the ray (do not forget to normalize!)
