@@ -108,7 +108,8 @@ protected:
 
         Vector geometryNormal = e1.cross(e2).normalized();
 
-        Vertex interpolate_Vert = Vertex::interpolate(Vector2(tuv.y(), tuv.z()), v1, v2, v3);
+        Vertex interpolate_Vert =
+            Vertex::interpolate(Vector2(tuv.y(), tuv.z()), v1, v2, v3);
 
         populate(its, pos, geometryNormal, interpolate_Vert);
 
@@ -127,7 +128,7 @@ protected:
 
     Bounds getBoundingBox(int primitiveIndex) const override {
 
-        Bounds box = Bounds::empty();
+        Bounds box        = Bounds::empty();
         Vector3i triangle = m_triangles[primitiveIndex];
 
         for (int i = 0; i < 3; ++i) {
@@ -173,7 +174,8 @@ public:
     }
 
     AreaSample sampleArea(Sampler &rng) const override{
-        // only implement this if you need triangle mesh area light sampling for your rendering competition
+        // only implement this if you need triangle mesh area light sampling for
+        // your rendering competition
         NOT_IMPLEMENTED
     }
 
