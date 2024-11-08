@@ -33,48 +33,27 @@ class TriangleMesh : public AccelerationStructure {
     /// geometric normal instead.
     bool m_smoothNormals;
 
-    inline void populate(SurfaceEvent &surf, const Point &position,
-                         const Vector &normal,
-                         const Vertex interpolated_Ver) const {
-        // its.t = tuv.x();    // its.t = t
-        // Point pos = ray(tuv.x());
-
-        // Vector geometryNormal = e1.cross(e2).normalized();
-
-        // Vertex interpolate_Vert = Vertex::interpolate(Vector2(tuv.y(),
-        // tuv.z()), v1, v2, v3);
-
-        // populate(its, pos, geometryNormal, interpolate_Vert);
+    inline void populate(SurfaceEvent &surf, const Point &position, const Vector &normal, const Vertex interpolated_Ver) const 
+    {
 
         surf.position = position;
 
         surf.uv = interpolated_Ver.uv;
 
-        //  gpt: set both the geometry and shading normal based on smooth
-        //  shading setting
+        // Gouraud shading
+        // set both the geometry and shading normal based on smooth shading setting
         if (m_smoothNormals) {
             surf.geometryNormal = normal.normalized();
             surf.shadingNormal  = interpolated_Ver.normal.normalized();
         } else {
-            // When smooth shading is disabled, use the geometry normal for both
+            // when smooth shading is disabled, use the geometry normal for both
             surf.geometryNormal = normal.normalized();
             surf.shadingNormal  = surf.geometryNormal;
         }
-        // // Shading normal (this might be interpolated if smooth shading
-        // isenabled) surf.shadingNormal =
-        //     m_smoothNormals ? surf.geometryNormal : surf.geometryNormal;
-
-        // // Tangent (arbitrarily chosen here, typically perpendicular to
-        // normal)
-        //  surf.tangent =
-        //     (fabs(surf.geometryNormal.x()) < 0.99)
-        //         ? Vector(1, 0, 0).cross(surf.geometryNormal).normalized()
-        //         : Vector(0, 1, 0).cross(surf.geometryNormal).normalized();
-
-        // gpt: Compute the tangent vector. It should be perpendicular to the
-        // shading normal. gpt: If the shading normal is close to the x-axis,
-        // use (0, 1, 0) as an arbitrary vector to cross with.
-        if (fabs(surf.shadingNormal.x()) < 0.9999) {
+        
+        // Compute the tangent vector. It should be perpendicular to the shading normal. 
+        // If the shading normal is close to the x-axis, use (0, 1, 0) as an arbitrary vector to cross with. (?
+        if (fabs(surf.shadingNormal.x()) < 0.999) {
             surf.tangent =
                 Vector(1, 0, 0).cross(surf.shadingNormal).normalized();
         } else {
@@ -83,8 +62,9 @@ class TriangleMesh : public AccelerationStructure {
         }
 
         // surf.shadingFrame() = Frame(normal);
-        surf.shadingFrame() = Frame(surf.shadingNormal);
-        surf.pdf            = 0;
+        // surf.shadingFrame() = Frame(surf.shadingNormal);
+        surf.pdf = 0;   // prob. density function
+        
     }
 
 protected:
@@ -98,34 +78,32 @@ protected:
         const Vertex &v2 = m_vertices[m_triangles[primitiveIndex][1]];
         const Vertex &v3 = m_vertices[m_triangles[primitiveIndex][2]];
 
-        Vector T  = Vector(ray.origin - v1.position); // T = O - A
-        Vector e1 = Vector(v2.position - v1.position);
-        Vector e2 = Vector(v3.position - v1.position);
+        Vector T  = Vector(ray.origin - v1.position);   // T = O - A    (notation from scratchPixel)
+        Vector e1 = Vector(v2.position - v1.position);  // E1 = B - A
+        Vector e2 = Vector(v3.position - v1.position);  // E2 = C - A
 
         // helper variables
-        Vector P = Vector(ray.direction.cross(e2));
-        Vector Q = Vector(T.cross(e1));
+        Vector P = Vector(ray.direction.cross(e2));     // P = D x E2
+        Vector Q = Vector(T.cross(e1));     // Q = T x E1
 
-        float det    = P.dot(e1);
+        float det = P.dot(e1);      // determinant = P . E1
         float invDet = 1.0f / det;
 
-        // If det is close to zero, the ray and the triangle are parallel
-        if (abs(det) < 1e-8)
-            return false;
+        // If det is close to zero, the ray and the triangle are parallel 
+        // the give Epislon is still big, 1e-8 is small enough
+        if (abs(det) < 1e-8) return false;
 
         Vector tuv = invDet * Vector(Q.dot(e2), P.dot(T), Q.dot(ray.direction));
 
         // intersection exists if (0 <= u <= 1 && 0 <= v <= 1 && u + v <= 1)
         // in Vector tuv, u = tuv.y(), v = tuv.z()
-        if (tuv.y() < 0 || tuv.y() > 1 || tuv.z() < 0 || tuv.z() > 1 ||
-            tuv.y() + tuv.z() > 1) {
+        if(tuv.y() < 0 || tuv.y() > 1 || tuv.z() < 0 || tuv.z() > 1 || tuv.y() + tuv.z() > 1) {
             return false;
         }
 
-        if (tuv.x() < Epsilon || tuv.x() > its.t)
-            return false;
+        if (tuv.x() < Epsilon || tuv.x() > its.t) return false;
 
-        its.t     = tuv.x(); // its.t = t
+        its.t = tuv.x();    // its.t = t
         Point pos = ray(tuv.x());
 
         Vector geometryNormal = e1.cross(e2).normalized();
@@ -136,6 +114,7 @@ protected:
         populate(its, pos, geometryNormal, interpolate_Vert);
 
         return true;
+
 
         // hints:
         // * use m_triangles[primitiveIndex] to get the vertex indices of the
@@ -216,3 +195,4 @@ public:
 } // namespace lightwave
 
 REGISTER_SHAPE(TriangleMesh, "mesh")
+
