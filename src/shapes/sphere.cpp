@@ -76,9 +76,7 @@ class Sphere : public Shape {
 
             } else {    // no solution
                 return false;
-
             }     
-
             
             return false;
         }
@@ -91,7 +89,7 @@ class Sphere : public Shape {
             return Point(0);
         }
         AreaSample sampleArea(Sampler &rng) const override {
-            NOT_IMPLEMENTED // leave it for 1.2.2
+            NOT_IMPLEMENTED // leave it for later
         }
         std::string toString() const override { 
             return "Sphere[]";
