@@ -5,7 +5,14 @@
 
 namespace lightwave {
 
-void Instance::transformFrame(SurfaceEvent &surf, const Vector &wo) const {}
+void Instance::transformFrame(SurfaceEvent &surf, const Vector &wo) const {
+    surf.tangent = surf.tangent.normalized();
+    surf.shadingNormal =
+        m_transform->applyNormal(surf.shadingNormal).normalized();
+    surf.shadingFrame().bitangent =
+        surf.shadingNormal.cross(surf.tangent).normalized();
+    surf.position = m_transform->apply(surf.position);
+}
 
 inline void validateIntersection(const Intersection &its) {
     // use the following macros to make debugginer easier:
@@ -49,7 +56,18 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
 
     const float previousT = its.t;
     Ray localRay;
-    NOT_IMPLEMENTED
+    localRay = m_transform->inverse(worldRay); // convert global space ray into
+                                               // local space
+    // Transform t (distance from origin to closest known intersection) to local
+    // space To do so we multiply by whatever value our unit vector got
+    // stretched when going to local space
+    float tFactor = localRay.direction.length();
+    its.t *= tFactor;
+    localRay = localRay.normalized();
+
+    // TODO
+    // transform ray into local space, finish everything and then call the
+    // transform frame
 
     // hints:
     // * transform the ray (do not forget to normalize!)
@@ -57,10 +75,15 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
 
     const bool wasIntersected = m_shape->intersect(localRay, its, rng);
     if (wasIntersected) {
+        // now its.t is local space (and its new value)
+        // now its.normal, its.tangent etc are all local space as well
+        //
         its.instance = this;
         validateIntersection(its);
         // hint: how does its.t need to change?
-
+        // TODO: Transform tangent, normal, bitangent, position, t all back to
+        // world space
+        its.t /= tFactor;
         transformFrame(its, -localRay.direction);
     } else {
         its.t = previousT;
