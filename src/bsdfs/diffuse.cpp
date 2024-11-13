@@ -10,14 +10,11 @@ public:
         m_albedo = properties.get<Texture>("albedo");
     }
 
-    BsdfEval evaluate(const Point2 &uv, const Vector &wo, const Vector &wi) const override {
-        NOT_IMPLEMENTED
-    }
+    BsdfEval evaluate(const Point2 &uv, const Vector &wo,
+                      const Vector &wi) const override{ NOT_IMPLEMENTED }
 
     BsdfSample sample(const Point2 &uv, const Vector &wo,
-                      Sampler &rng) const override {
-        NOT_IMPLEMENTED
-    }
+                      Sampler &rng) const override{ NOT_IMPLEMENTED }
 
     std::string toString() const override {
         return tfm::format(
