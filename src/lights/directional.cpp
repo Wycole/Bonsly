@@ -14,9 +14,7 @@ public:
 
     DirectLightSample sampleDirect(const Point &origin,
                                    Sampler &rng) const override {
-        Vector wi    = direction;
-        Color weight = power;
-        return DirectLightSample{ direction.normalized(), weight, Infinity };
+        return DirectLightSample{ direction.normalized(), power, Infinity };
     }
 
     bool canBeIntersected() const override { return false; }
