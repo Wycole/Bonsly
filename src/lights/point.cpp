@@ -15,10 +15,10 @@ public:
     DirectLightSample sampleDirect(const Point &origin,
                                    Sampler &rng) const override {
         // NOT_IMPLEMENTED
-        Vector wi          = Vector(query_point - origin);
-        float surface_area = Pi * 4 * wi.dot(wi);
-        Color intensity    = power / surface_area;
-        Color weight       = intensity;
+        Vector wi        = Vector(query_point - origin);
+        float vector_dot = wi.dot(wi);
+        Color intensity  = Inv4Pi * power / vector_dot;
+        Color weight     = intensity;
 
         return DirectLightSample{ wi.normalized(), weight, wi.length() };
     }
