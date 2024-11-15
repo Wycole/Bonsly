@@ -16,8 +16,8 @@ public:
 
     Color evaluate(const Point2 &uv) const override {
         // rescale the uv coordinate values
-        int xchecker = fmod((uv.x() * scale.x()), 2);
-        int ychecker = fmod((uv.y() * scale.y()), 2);
+        int xchecker = fmod(floor(uv.x() * scale.x()), 2);
+        int ychecker = fmod(floor(uv.y() * scale.y()), 2);
         if (xchecker == 0) {
             if (ychecker == 0) {
                 return color0;
