@@ -41,7 +41,21 @@ public:
     }
 
     Color evaluate(const Point2 &uv) const override {
-        NOT_IMPLEMENTED
+        switch (m_border) {
+        case BorderMode::Clamp: {
+            // not sure how to do this one
+            return Color(m_image->get(Point2i(uv.x(), uv.y())));
+        }
+
+        case BorderMode::Repeat: {
+            // get the floating point part of the number,
+            // add 1 if negative, if positive just keep going
+            float fracx = uv.x() - (int) (uv.x());
+            float fracy = uv.y() - (int) (uv.y());
+            return Color(m_image->get(
+                Point2i(m_image->resolution().y() * fracx + fracy)));
+        }
+        }
     }
 
     std::string toString() const override {

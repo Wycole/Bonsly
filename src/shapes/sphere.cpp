@@ -27,8 +27,12 @@ class Sphere : public Shape {
 
         // surf.tangent = Vector{1, 0, 0};
         Vector x_axis = { 1.0f, 0.0f, 0.0f };
-        surf.tangent  = surf.shadingNormal.cross(x_axis).normalized();
-        surf.pdf      = 1.0f / (4.0f * M_PI);
+        if (surf.shadingNormal == x_axis) {
+            surf.tangent = Vector{ 0.0f, 1.0f, 0.0f };
+        } else {
+            surf.tangent = surf.shadingNormal.cross(x_axis).normalized();
+        }
+        surf.pdf = 1.0f / (4.0f * M_PI);
     }
 
 public:

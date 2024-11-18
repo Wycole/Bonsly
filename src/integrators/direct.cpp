@@ -19,7 +19,8 @@ public:
                 isik.light->sampleDirect(its.position, rng);
             // take the light sample at the point
             // of intersectiondire
-            Ray secondary_ray = Ray(its.position, directlight.wi, 1);
+            Ray secondary_ray =
+                Ray(its.position, directlight.wi, ray.depth + 1);
             Intersection its2 = m_scene->intersect(secondary_ray, rng);
             if (!its2 || ((its2.t) > directlight.distance)) {
                 output = directlight.weight *
