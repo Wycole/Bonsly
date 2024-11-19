@@ -11,9 +11,9 @@ public:
     Color Li(const Ray &ray, Sampler &rng) override {
         Intersection its = m_scene->intersect(ray, rng);
         Color output;
-        if (!its) {
+        if (!its) {                              // no surface intersection
             return its.evaluateEmission().value; // no intersection background
-        } else {
+        } else {                                 // surface intersection occurs
             LightSample isik = m_scene->sampleLight(rng); // light sample
             DirectLightSample directlight =
                 isik.light->sampleDirect(its.position, rng);
@@ -22,7 +22,7 @@ public:
             Ray secondary_ray =
                 Ray(its.position, directlight.wi, ray.depth + 1);
             Intersection its2 = m_scene->intersect(secondary_ray, rng);
-            if (!its2 || ((its2.t) > directlight.distance)) {
+            if (!its2 || (its2.t > directlight.distance)) {
                 output = directlight.weight *
                          its.evaluateBsdf(directlight.wi).value *
                          max(its.shadingNormal.dot(directlight.wi), 0.f);
