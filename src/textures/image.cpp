@@ -40,59 +40,95 @@ public:
         // clang-format on
     }
 
+    //   ------> x  |
+    //              |
+    //              |
+    //              v y
     Color evaluate(const Point2 &uv) const override {
-        float tx; // x of the texel
-        float ty; // y of the texel
-        float fracx;
-        float fracy;
-        switch (m_border) {
-        case BorderMode::Clamp: {
-            // get the floating point part of the number,
-            // add 1 if negative, if positive just keep going
-            float fracx = uv.x() - floor(uv.x());
-            float fracy = ceil(uv.y()) - uv.y(); // this was the problem
-            // dont forget that the y-axis is reversed since the origin is
-            // top left, not bot left
-            // look at how its defined in the assignment for the uv stuff
-            tx = (int) fmin(m_image->resolution().x() * fracx,
-                            m_image->resolution().x() - 1);
-            ty = (int) fmin(m_image->resolution().y() * fracy,
-                            m_image->resolution().y() - 1);
+        return evalFilterMode(Point2(uv.x(), 1 - uv.y()));
+    }
+
+    inline Color evalFilterMode(const Point2 &uv) const {
+        Point2 scaled = Point2(uv.x() * m_image->resolution().x(),
+                               uv.y() * m_image->resolution().y());
+
+        // switch (m_filter) {
+        // case (FilterMode::Nearest): {
+        if (m_filter == FilterMode::Nearest) {
+            // we floor the scaled coordinates to get nearest pixel
+            Point2i floored = Point2i(floor(scaled.x()), floor(scaled.y()));
+
+            return m_image->get(evalBorderMode(floored)) * m_exposure;
         }
 
-        case BorderMode::Repeat: {
-            // get the floating point part of the number,
-            // add 1 if negative, if positive just keep going
-            float fracx = uv.x() - floor(uv.x());
-            float fracy = ceil(uv.y()) - uv.y(); // this was the problem
-            // dont forget that the y-axis is reversed since the origin is
-            // top left, not bot left
-            // look at how its defined in the assignment for the uv stuff
-            tx = m_image->resolution().x() * fracx;
-            ty = m_image->resolution().y() * fracy;
+        // case (FilterMode::Bilinear): {
+        else if (m_filter == FilterMode::Bilinear) {
+            // Point2i floored = Point2i(floor(scaled.x()), floor(scaled.y()));
+            // //
 
-            // res x is width, y is height. at least I hope so
-        }
-        }
-        Color textured;
-        switch (m_filter) {
-        case FilterMode::Bilinear: {
-            // first in x, then in y
-            Color c00 = Color(m_image->get(Point2i(tx, ty)));
-            Color c10 = Color(m_image->get(Point2i(tx + 1, ty)));
-            Color c01 = Color(m_image->get(Point2i(tx, ty + 1)));
-            Color c11 = Color(m_image->get(Point2i(tx + 1, ty + 1)));
-            textured  = ((1 - fracx) * (1 - fracy) * c00) +
-                       ((fracx) * (1 - fracy) * c10) +
-                       ((1 - fracx) * (fracy) *c01) + ((fracx) * (fracy) *c11);
-        }
+            // Point2i p00 = evalBorderMode(Point2i(floored.x(), floored.y()));
+            // Point2i p10 = evalBorderMode(Point2i(floored.x() + 1,
+            // floored.y())); Point2i p01 =  evalBorderMode(Point2i(floored.x(),
+            // floored.y() - 1)); Point2i p11 =
+            //     evalBorderMode(Point2i(floored.x() + 1, floored.y() - 1));
 
-        case FilterMode::Nearest: {
-            textured = Color(m_image->get(Point2i(tx, ty)));
-            // this is enough, just goes to the nearest texel to the point?
+            // // TODO (Chat GPT)
+            Point2i floored(floor(scaled.x() - 0.5f), floor(scaled.y() - 0.5f));
+
+            Point2i p00 = evalBorderMode(Point2i(floored.x(), floored.y()));
+            Point2i p10 = evalBorderMode(Point2i(floored.x(), floored.y() + 1));
+            Point2i p01 = evalBorderMode(Point2i(floored.x() + 1, floored.y()));
+            Point2i p11 =
+                evalBorderMode(Point2i(floored.x() + 1, floored.y() + 1));
+
+            float fu = (scaled.x() - 0.5f - floor(scaled.x() - 0.5f));
+            float fv = (scaled.y() - 0.5f - floor(scaled.y() - 0.5f));
+
+            return ((1 - fu) * (1 - fv) * m_image->get(p00) +
+                    (1 - fu) * fv * m_image->get(p10) +
+                    fu * (1 - fv) * m_image->get(p01) +
+                    fu * fv * m_image->get(p11)) *
+                   m_exposure;
         }
+    }
+
+    inline Point2i evalBorderMode(const Point2i &imageCoords) const {
+
+        int x; // the coordinate we return in the end
+        int y;
+
+        // switch (m_border) {
+        // case (BorderMode::Repeat): {
+        if (m_border == BorderMode::Repeat) {
+
+            x = ((imageCoords.x() % m_image->resolution().x()) +
+                 m_image->resolution().x()) %
+                m_image->resolution().x();
+            y = ((imageCoords.y() % m_image->resolution().y()) +
+                 m_image->resolution().y()) %
+                m_image->resolution().y();
+
         }
-        return textured;
+        // case (BorderMode::Clamp): {
+        else if (m_border == BorderMode::Clamp) {
+            // map between [-inf, inf]^2 -> [0,1]^2
+            if (imageCoords.x() < 0) {
+                x = 0;
+            } else if (imageCoords.x() > m_image->resolution().x() - 1) {
+                x = m_image->resolution().x() - 1;
+            } else {
+                x = imageCoords.x();
+            }
+
+            if (imageCoords.y() < 0) {
+                y = 0;
+            } else if (imageCoords.y() > m_image->resolution().y() - 1) {
+                y = m_image->resolution().y() - 1;
+            } else {
+                y = imageCoords.y();
+            }
+        }
+        return Point2i(x, y);
     }
 
     std::string toString() const override {

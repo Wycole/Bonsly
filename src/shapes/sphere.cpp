@@ -12,7 +12,7 @@ class Sphere : public Shape {
         // float theta = acos(position.z() /
         //     sqrt(position.x() * position.x() + position.y() * position.y() +
         //     position.z() * position.z()));
-        float theta = asin(position.y()); // from the link-> this was acos made
+        float theta = asin(position.y()); // from the link-> this was acos, made
                                           // it into asin and it works
         float phi = atan2(position.z(), position.x());
 
