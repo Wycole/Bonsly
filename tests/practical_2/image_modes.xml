@@ -13,7 +13,7 @@
                 </transform>
             </camera>
 
-            <light type="directional" direction="0,0,1" intensity="3.1415926535,3.1415926535,3.1415926535"/>
+            <light type="directional" direction="0,0,-1" intensity="3.1415926535,3.1415926535,3.1415926535"/>
 
             <instance>
                 <shape type="mesh" filename="../meshes/uvquad.ply"/>
