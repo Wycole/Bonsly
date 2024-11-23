@@ -25,7 +25,7 @@ public:
 
         // inverse transformation seems to be the only one works
         if (m_transform) {
-            transfDirection = m_transform->inverse(direction);
+            transfDirection = m_transform->inverse(direction).normalized();
         } else {
             transfDirection = direction;
         }
