@@ -52,13 +52,15 @@ public:
         Point2 scaled = Point2(uv.x() * m_image->resolution().x(),
                                uv.y() * m_image->resolution().y());
 
+        Color endColor;
+
         // switch (m_filter) {
         // case (FilterMode::Nearest): {
         if (m_filter == FilterMode::Nearest) {
             // we floor the scaled coordinates to get nearest pixel
             Point2i floored = Point2i(floor(scaled.x()), floor(scaled.y()));
 
-            return m_image->get(evalBorderMode(floored)) * m_exposure;
+            endColor = m_image->get(evalBorderMode(floored)) * m_exposure;
         }
 
         // case (FilterMode::Bilinear): {
@@ -84,12 +86,13 @@ public:
             float fu = (scaled.x() - 0.5f - floor(scaled.x() - 0.5f));
             float fv = (scaled.y() - 0.5f - floor(scaled.y() - 0.5f));
 
-            return ((1 - fu) * (1 - fv) * m_image->get(p00) +
-                    (1 - fu) * fv * m_image->get(p10) +
-                    fu * (1 - fv) * m_image->get(p01) +
-                    fu * fv * m_image->get(p11)) *
-                   m_exposure;
+            endColor = ((1 - fu) * (1 - fv) * m_image->get(p00) +
+                        (1 - fu) * fv * m_image->get(p10) +
+                        fu * (1 - fv) * m_image->get(p01) +
+                        fu * fv * m_image->get(p11)) *
+                       m_exposure;
         }
+        return endColor;
     }
 
     inline Point2i evalBorderMode(const Point2i &imageCoords) const {
@@ -112,21 +115,8 @@ public:
         // case (BorderMode::Clamp): {
         else if (m_border == BorderMode::Clamp) {
             // map between [-inf, inf]^2 -> [0,1]^2
-            if (imageCoords.x() < 0) {
-                x = 0;
-            } else if (imageCoords.x() > m_image->resolution().x() - 1) {
-                x = m_image->resolution().x() - 1;
-            } else {
-                x = imageCoords.x();
-            }
-
-            if (imageCoords.y() < 0) {
-                y = 0;
-            } else if (imageCoords.y() > m_image->resolution().y() - 1) {
-                y = m_image->resolution().y() - 1;
-            } else {
-                y = imageCoords.y();
-            }
+            x = clamp(imageCoords.x(), 0, m_image->resolution().x() - 1);
+            y = clamp(imageCoords.y(), 0, m_image->resolution().y() - 1);
         }
         return Point2i(x, y);
     }

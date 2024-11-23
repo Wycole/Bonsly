@@ -31,10 +31,10 @@ public:
         if (!its2 || (its2.t > directlight.distance)) {
             // no intersection, or behind the light source
             // light is not occluded
-            output = directlight.weight *
-                     its.evaluateBsdf(directlight.wi).value *
-                     max(0.f, abs(its.shadingNormal.dot(directlight.wi)));
-            // taking the absolute value and its fine now
+            output =
+                directlight.weight * its.evaluateBsdf(directlight.wi).value;
+            // this is the Li(x, wi) * dwi,
+            // our evaluate bsdf comes with |cosD|*frfr
         }
 
         return output;
