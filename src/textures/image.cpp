@@ -54,8 +54,6 @@ public:
 
         Color endColor;
 
-        // switch (m_filter) {
-        // case (FilterMode::Nearest): {
         if (m_filter == FilterMode::Nearest) {
             // we floor the scaled coordinates to get nearest pixel
             Point2i floored = Point2i(floor(scaled.x()), floor(scaled.y()));
@@ -63,7 +61,6 @@ public:
             endColor = m_image->get(evalBorderMode(floored)) * m_exposure;
         }
 
-        // case (FilterMode::Bilinear): {
         else if (m_filter == FilterMode::Bilinear) {
             // Point2i floored = Point2i(floor(scaled.x()), floor(scaled.y()));
             // //
@@ -100,8 +97,6 @@ public:
         int x; // the coordinate we return in the end
         int y;
 
-        // switch (m_border) {
-        // case (BorderMode::Repeat): {
         if (m_border == BorderMode::Repeat) {
 
             x = ((imageCoords.x() % m_image->resolution().x()) +
@@ -111,9 +106,7 @@ public:
                  m_image->resolution().y()) %
                 m_image->resolution().y();
 
-        }
-        // case (BorderMode::Clamp): {
-        else if (m_border == BorderMode::Clamp) {
+        } else if (m_border == BorderMode::Clamp) {
             // map between [-inf, inf]^2 -> [0,1]^2
             x = clamp(imageCoords.x(), 0, m_image->resolution().x() - 1);
             y = clamp(imageCoords.y(), 0, m_image->resolution().y() - 1);
