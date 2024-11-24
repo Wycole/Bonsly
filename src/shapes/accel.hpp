@@ -191,7 +191,79 @@ class AccelerationStructure : public Shape {
      */
     void binning(const Node &node, int &bestSplitAxis,
                  float &bestSplitPosition) {
-        NOT_IMPLEMENTED
+        static constexpr int BINS = 16;
+        struct Bin {
+            Bounds bounds      = Bounds::empty();
+            int primitiveCount = 0;
+        };
+        Bin bins[3][BINS];
+
+        // getting the bounds for the box
+        Bounds centroidBounds = Bounds::empty();
+        for (NodeIndex i = 0; i < node.primitiveCount; i++) {
+            const auto centroid =
+                getCentroid(m_primitiveIndices[node.leftFirst + i]);
+            centroidBounds.extend(centroid);
+        }
+
+        // getting the primitives inside the boxes
+        for (NodeIndex i = 0; i < node.primitiveCount; i++) {
+            const auto primitiveIndex = m_primitiveIndices[node.leftFirst + i];
+            const auto centroid       = getCentroid(primitiveIndex);
+
+            for (int axis = 0; axis < 3; axis++) {
+                int binIndex = static_cast<int>(
+                    BINS * (centroid[axis] - centroidBounds.min()[axis]) /
+                    (centroidBounds.max()[axis] - centroidBounds.min()[axis]));
+                binIndex = clamp(binIndex, 0, BINS - 1);
+
+                bins[axis][binIndex].primitiveCount++;
+                bins[axis][binIndex].bounds.extend(
+                    getBoundingBox(primitiveIndex));
+            }
+        }
+
+        // now look at each box with SAH to find the optimal one
+        float bestCost     = std::numeric_limits<float>::max();
+        int bestAxis       = -1;
+        float bestPosition = 0.0f;
+
+        for (int axis = 0; axis < 3; ++axis) {
+            Bounds leftBounds = Bounds::empty();
+            int leftCount     = 0;
+
+            for (int i = 0; i < BINS; ++i) {
+                Bounds rightBounds = Bounds::empty();
+                int rightCount     = 0;
+
+                // Compute right bounds and count
+                for (int j = i + 1; j < BINS; ++j) {
+                    rightBounds.extend(bins[axis][j].bounds);
+                    rightCount += bins[axis][j].primitiveCount;
+                }
+
+                // Update left bounds and count
+                leftBounds.extend(bins[axis][i].bounds);
+                leftCount += bins[axis][i].primitiveCount;
+
+                // Compute SAH cost
+                float leftArea  = surfaceArea(leftBounds);
+                float rightArea = surfaceArea(rightBounds);
+                float cost      = leftArea * leftCount + rightArea * rightCount;
+
+                if (cost < bestCost) {
+                    bestCost     = cost;
+                    bestAxis     = axis;
+                    bestPosition = centroidBounds.min()[axis] +
+                                   (i + 1) *
+                                       (centroidBounds.max()[axis] -
+                                        centroidBounds.min()[axis]) /
+                                       BINS;
+                }
+            }
+        }
+        bestSplitAxis     = bestAxis;
+        bestSplitPosition = bestPosition;
     }
 
     /// @brief Attempts to subdivide a given BVH node.
@@ -202,7 +274,7 @@ class AccelerationStructure : public Shape {
         }
 
         // set to true when implementing binning
-        static constexpr bool UseSAH = false;
+        static constexpr bool UseSAH = true;
 
         int splitAxis = -1;
         float splitPosition;
@@ -309,8 +381,9 @@ public:
                    Sampler &rng) const override {
         if (m_primitiveIndices.empty())
             return false; // exit early if no children exist
-        if (intersectAABB(rootNode().aabb, ray) <
-            its.t) // test root bounding box for potential hit
+        if (intersectAABB(rootNode().aabb, ray) < its.t) // test root bounding
+                                                         // box for potential
+                                                         // hit
             return intersectNode(rootNode(), ray, its, rng);
         return false;
     }
