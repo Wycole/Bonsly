@@ -18,6 +18,26 @@ public:
 
     EmissionEval evaluate(const Vector &direction) const override {
         Point2 warped = Point2(0);
+
+        // goal: light direciton -> image coords
+
+        Vector transfDirection;
+
+        // inverse transformation seems to be the only one works
+        if (m_transform) {
+            transfDirection = m_transform->inverse(direction).normalized();
+        } else {
+            transfDirection = direction;
+        }
+
+        // spherical coords -> texture coords
+        // remap from [x,y] => [phi, theta] = [-pi;pi] x [0;pi] to [0;1]^2
+        // maps from the point samples to its left lower coordinates index
+        // same formula as sphere.cpp
+        warped.x() =
+            0.5 + atan2(-transfDirection.z(), transfDirection.x()) * Inv2Pi;
+        warped.y() = -0.5 + asin(-transfDirection.y()) * InvPi;
+
         // hints:
         // * if (m_transform) { transform direction vector from world to local
         // coordinates }
@@ -42,8 +62,8 @@ public:
         // sun for example)
 
         return {
-            .wi = direction,
-            .weight = E.value * Inv4Pi,
+            .wi       = direction,
+            .weight   = E.value * Inv4Pi,
             .distance = Infinity,
         };
     }
