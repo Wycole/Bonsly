@@ -218,8 +218,7 @@ class AccelerationStructure : public Shape {
                 binIndex = clamp(binIndex, 0, BINS - 1);
 
                 bins[axis][binIndex].primitiveCount++;
-                bins[axis][binIndex].bounds.extend(
-                    getBoundingBox(primitiveIndex));
+                bins[axis][binIndex].bounds.extend(getCentroid(primitiveIndex));
             }
         }
 
@@ -228,16 +227,16 @@ class AccelerationStructure : public Shape {
         int bestAxis       = -1;
         float bestPosition = 0.0f;
 
-        for (int axis = 0; axis < 3; ++axis) {
+        for (int axis = 0; axis < 3; axis++) {
             Bounds leftBounds = Bounds::empty();
             int leftCount     = 0;
 
-            for (int i = 0; i < BINS; ++i) {
+            for (int i = 0; i < BINS; i++) {
                 Bounds rightBounds = Bounds::empty();
                 int rightCount     = 0;
 
                 // Compute right bounds and count
-                for (int j = i + 1; j < BINS; ++j) {
+                for (int j = i + 1; j < BINS; j++) {
                     rightBounds.extend(bins[axis][j].bounds);
                     rightCount += bins[axis][j].primitiveCount;
                 }
