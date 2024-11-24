@@ -2,38 +2,35 @@
 
 namespace lightwave {
 
-class NormalIntegrator: public SamplingIntegrator{
+class NormalIntegrator : public SamplingIntegrator {
 
     bool remap;
 
-public: 
-
+public:
     NormalIntegrator(const Properties &properties)
         : SamplingIntegrator(properties) {
-            remap = properties.get<bool>("remap", true);
-        }
-
+        remap = properties.get<bool>("remap", true);
+    }
 
     Color Li(const Ray &ray, Sampler &rng) override {
 
         Intersection intersection = m_scene->intersect(ray, rng);
-        Vector normal = intersection.wo;
- 
-        if(remap) {     // remap == true, remap normals between [-1,1] to the interval [0,1]
-        
+        Vector normal             = intersection.shadingNormal;
+
+        if (remap) { // remap == true, remap normals between [-1,1] to the
+                     // interval [0,1]
+                     // #TODO // no intersection case in the normal integrator
             normal = (normal + Vector(1.0f, 1.0f, 1.0f)) / 2.0f;
 
         } else {
-            if(!intersection){    // remap == false && intersections occur
-                normal = {0, 0, 0};
-            } else{     // remap == false && no intersection
+            if (!intersection) { // remap == false && intersections occur
+                normal = { 0, 0, 0 };
+            } else { // remap == false && no intersection
                 normal = intersection.wo;
             }
         }
         return Color(normal);
     }
-
-
 
     /// @brief An optional textual representation of this class, which can be
     /// useful for debugging.
@@ -43,11 +40,10 @@ public:
             "  sampler = %s,\n"
             "  image = %s,\n"
             "]",
-            indent(m_sampler), 
+            indent(m_sampler),
             indent(m_image));
     }
-
 };
-}   // namespace lightwave
+} // namespace lightwave
 
 REGISTER_INTEGRATOR(NormalIntegrator, "normal")
