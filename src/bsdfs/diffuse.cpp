@@ -17,7 +17,11 @@ public:
     }
 
     BsdfSample sample(const Point2 &uv, const Vector &wo,
-                      Sampler &rng) const override{ NOT_IMPLEMENTED }
+                      Sampler &rng) const override {
+        // vector v is the reflected vectore from the diffuse area
+        Vector v = squareToCosineHemisphere(rng.next2D());
+        return BsdfSample{ v, m_albedo->evaluate(uv) };
+    }
 
     std::string toString() const override {
         return tfm::format(
