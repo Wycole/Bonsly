@@ -15,7 +15,6 @@ public:
 
         if (!its) { // no surface intersection
             // part a
-
             return its.evaluateEmission().value; // no intersection background
             // part b
         }
