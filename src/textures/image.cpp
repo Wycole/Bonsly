@@ -88,13 +88,20 @@ public:
         int y;
 
         if (m_border == BorderMode::Repeat) {
-
-            x = ((imageCoords.x() % m_image->resolution().x()) +
-                 m_image->resolution().x()) %
-                m_image->resolution().x();
-            y = ((imageCoords.y() % m_image->resolution().y()) +
-                 m_image->resolution().y()) %
-                m_image->resolution().y();
+            // imageCoords might exceed the border
+            // x = ((imageCoords.x() % m_image->resolution().x()) +
+            //      m_image->resolution().x()) %
+            //     m_image->resolution().x();
+            // y = ((imageCoords.y() % m_image->resolution().y()) +
+            //      m_image->resolution().y()) %
+            //     m_image->resolution().y();
+            //  use a custom modulo function here that supports negative values
+            x = fmod(fmod(imageCoords.x(), m_image->resolution().x()) +
+                         m_image->resolution().x(),
+                     m_image->resolution().x());
+            y = fmod(fmod(imageCoords.y(), m_image->resolution().y()) +
+                         m_image->resolution().y(),
+                     m_image->resolution().y());
 
         } else if (m_border == BorderMode::Clamp) {
             // map between [-inf, inf]^2 -> [0,1]^2

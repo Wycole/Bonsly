@@ -12,7 +12,7 @@ public:
 
     BsdfEval evaluate(const Point2 &uv, const Vector &wo,
                       const Vector &wi) const override {
-        return { m_albedo->evaluate(uv) * abs(Frame::cosTheta(wi)) * InvPi };
+        return { m_albedo->evaluate(uv) * Frame::absCosTheta(wi) * InvPi };
         // this is the frfr * |cosD|
     }
 
