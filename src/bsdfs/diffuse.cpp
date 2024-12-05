@@ -20,7 +20,7 @@ public:
                       Sampler &rng) const override {
         // vector v is the reflected vectore from the diffuse area
         Vector v = squareToCosineHemisphere(rng.next2D());
-        return BsdfSample{ v, m_albedo->evaluate(uv) };
+        return BsdfSample{ v.normalized(), m_albedo->evaluate(uv) };
     }
 
     std::string toString() const override {
