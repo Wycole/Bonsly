@@ -20,39 +20,43 @@ public:
         if (m_scene->hasLights()) { // surface intersection occurs
             LightSample isik = m_scene->sampleLight(rng); // light sample
 
-            if (!isik) {
-                return Color(1.0);
-            }
+            if (isik) {
+                // we might not have a valid light sample
+                // keep it in the if statement
+                DirectLightSample directlight =
+                    isik.light->sampleDirect(its.position, rng);
 
-            DirectLightSample directlight =
-                isik.light->sampleDirect(its.position, rng);
+                // take the light sample at the point of intersectiondire (part
+                // d)
+                Ray secondary_ray =
+                    Ray(its.position, directlight.wi, ray.depth + 1);
+                Intersection its2 = m_scene->intersect(secondary_ray, rng);
 
-            // take the light sample at the point of intersectiondire (part d)
-            Ray secondary_ray =
-                Ray(its.position, directlight.wi, ray.depth + 1);
-            Intersection its2 = m_scene->intersect(secondary_ray, rng);
+                if (!its2 || (its2.t > directlight.distance)) {
+                    // no intersection, or behind the light sourse
+                    // light is not occluded (visible)
+                    // Evaluate BSDF at the hit point for the light direction
+                    Color bsdfVal = its.evaluateBsdf(directlight.wi).value;
+                    Color lightContribution = directlight.weight * bsdfVal;
 
-            if (!its2 || (its2.t > directlight.distance)) {
-                // no intersection, or behind the light sourse
-                // light is not occluded (visible)
-                // Evaluate BSDF at the hit point for the light direction
-                Color bsdfVal = its.evaluateBsdf(directlight.wi).value;
-                Color lightContribution = directlight.weight * bsdfVal;
+                    // Account for the light sampling probability
+                    lightContribution = lightContribution / isik.probability;
 
-                // Account for the light sampling probability
-                lightContribution = lightContribution / isik.probability;
-
-                // accumulating contributions
-                output += lightContribution;
+                    // accumulating contributions
+                    output += lightContribution;
+                }
             }
         }
-        BsdfSample samBsdf     = its.sampleBsdf(rng);
-        Ray bounceRay          = Ray(its.position, samBsdf.wi, ray.depth + 1);
-        Intersection itsbounce = m_scene->intersect(bounceRay, rng);
-        output += itsbounce.evaluateEmission().value * samBsdf.weight;
+        BsdfSample samBsdf = its.sampleBsdf(rng);
+        if (samBsdf) { // have to keep it in this if statement because,
+                       // we might not have a valid sample
 
-        output += its.evaluateEmission().value; // and this is adding the value
-                                                // of the emmission
+            Ray bounceRay = Ray(its.position, samBsdf.wi, ray.depth + 1);
+            Intersection itsbounce = m_scene->intersect(bounceRay, rng);
+            output += itsbounce.evaluateEmission().value * samBsdf.weight;
+        }
+        output += its.evaluateEmission().value; // and this is adding the
+                                                // value of the emmission
 
         return output;
     }
