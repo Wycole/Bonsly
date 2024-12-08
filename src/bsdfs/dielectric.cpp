@@ -25,7 +25,28 @@ public:
 
     BsdfSample sample(const Point2 &uv, const Vector &wo,
                       Sampler &rng) const override {
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+        float ior     = m_ior->scalar(uv);
+        Vector normal = Vector(0, 0, 1);
+
+        if (Frame::cosTheta(wo) < 0) {
+            ior    = 1 / ior;
+            normal = -normal;
+        }
+
+        // fresnel coefficients
+        float F = fresnelDielectric(wo.z(), ior);
+
+        // reflect or refract
+        if (rng.next() < F) {
+            // reflect wo around the normal outputs the direction wi
+            Vector wi = reflect(wo, normal);
+            return BsdfSample{ wi, m_reflectance->evaluate(uv) };
+        }
+
+        // refract wo around the normal
+        Vector wi = refract(wo, normal, ior);
+        return BsdfSample{ wi, m_transmittance->evaluate(uv) / (ior * ior) };
     }
 
     std::string toString() const override {
