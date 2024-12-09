@@ -21,8 +21,20 @@ public:
         // extremely specular distributions (alpha values below 10^-3)
         const auto alpha = std::max(float(1e-3), sqr(m_roughness->scalar(uv)));
 
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+        Color reflectance = m_reflectance->evaluate(uv);
 
+        Vector w_m  = (wi + wo) / (wi + wo).length(); // the halfvector
+        float d_wm  = microfacet::evaluateGGX(alpha, w_m);
+        float g1_wi = microfacet::smithG1(alpha, w_m, wi);
+        float g1_wo = microfacet::smithG1(alpha, w_m, wo);
+
+        float demoninator =
+            1 / abs(4 * Frame::cosTheta(wo) * Frame::cosTheta(wi));
+
+        Color together = reflectance * d_wm * g1_wi * g1_wo * demoninator;
+
+        return BsdfEval{ together };
         // hints:
         // * the microfacet normal can be computed from `wi' and `wo'
     }
