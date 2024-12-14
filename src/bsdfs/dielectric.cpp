@@ -45,8 +45,10 @@ public:
         }
 
         // refract wo around the normal
-        Vector wi = refract(wo, normal, ior);
-        return BsdfSample{ wi, m_transmittance->evaluate(uv) / (ior * ior) };
+        Vector wi      = refract(wo, normal, ior);
+        auto refracter = m_transmittance->evaluate(uv) / (ior * ior);
+        // upper thing makes the code run faster on my pc
+        return BsdfSample{ wi, refracter };
     }
 
     std::string toString() const override {

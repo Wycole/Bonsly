@@ -38,41 +38,49 @@ public:
             if (m_scene->hasLights()) {
 
                 LightSample lightSample = m_scene->sampleLight(rng);
-                // if lightSample can not be intersected
-                if (!lightSample.light->canBeIntersected()) {
+                if (!lightSample.isInvalid()) {
+                    if (!lightSample.light->canBeIntersected()) {
 
-                    DirectLightSample directSample =
-                        lightSample.light->sampleDirect(its.position, rng);
-                    BsdfEval bsdfEval = its.evaluateBsdf(directSample.wi);
+                        DirectLightSample directSample =
+                            lightSample.light->sampleDirect(its.position, rng);
 
-                    if (!bsdfEval.invalid()) {
+                        if (!directSample.isInvalid()) {
 
-                        // create a ray from current intersection to lightsource
-                        Ray shadowRay(its.position, directSample.wi);
-                        // check if intersection between current point and
-                        // lightsource is possible s.t. they are visible by each
-                        // other
-                        bool visible = !m_scene->intersect(
-                            shadowRay, directSample.distance, rng);
+                            BsdfEval bsdfEval =
+                                its.evaluateBsdf(directSample.wi);
 
-                        if (visible) {
-                            Color total_weight = (weight * bsdfEval.value *
-                                                  directSample.weight) /
-                                                 lightSample.probability;
-                            accum += total_weight;
+                            if (!bsdfEval.invalid()) {
+
+                                // create a ray from current intersection to
+                                // lightsource
+                                Ray shadowRay(its.position, directSample.wi);
+                                // check if intersection between current point
+                                // and lightsource is possible s.t. they are
+                                // visible by each other
+                                bool visible = !m_scene->intersect(
+                                    shadowRay, directSample.distance, rng);
+
+                                if (visible) {
+                                    Color total_weight =
+                                        (weight * bsdfEval.value *
+                                         directSample.weight) /
+                                        lightSample.probability;
+                                    accum += total_weight;
+                                }
+                            }
                         }
                     }
                 }
+                // if lightSample can not be intersected
             }
             // object gets hit -> get bsdf sample and the emission value of the
             // hit object
             bsdf = its.sampleBsdf(rng);
-            weight *= bsdf.weight;
-
-            // sample invalid, return emission color
             if (bsdf.isInvalid()) {
                 return accum;
             }
+            weight *= bsdf.weight;
+            // sample invalid, return emission color
 
             // recursively from the current intersection to the next object or
             // to infinity
