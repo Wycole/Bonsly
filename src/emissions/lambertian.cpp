@@ -11,7 +11,15 @@ public:
     }
 
     EmissionEval evaluate(const Point2 &uv, const Vector &wo) const override {
-        NOT_IMPLEMENTED
+        Color c;
+        auto cos = Frame::cosTheta(wo);
+        if (cos < 0) {
+            c = Color::black();
+        } else {
+            c = m_emission->evaluate(uv) * clamp(0.f, 1.f, cos);
+        }
+
+        return EmissionEval{ c };
     }
 
     std::string toString() const override {

@@ -57,21 +57,11 @@ public:
         if (m_filter == FilterMode::Nearest) {
             // we floor the scaled coordinates to get nearest pixel
             Point2i floored = Point2i(floor(scaled.x()), floor(scaled.y()));
-
             endColor = m_image->get(evalBorderMode(floored)) * m_exposure;
-        }
 
-        else if (m_filter == FilterMode::Bilinear) {
-            // Point2i floored = Point2i(floor(scaled.x()), floor(scaled.y()));
-            // //
+        } else if (m_filter == FilterMode::Bilinear) {
 
-            // Point2i p00 = evalBorderMode(Point2i(floored.x(), floored.y()));
-            // Point2i p10 = evalBorderMode(Point2i(floored.x() + 1,
-            // floored.y())); Point2i p01 =  evalBorderMode(Point2i(floored.x(),
-            // floored.y() - 1)); Point2i p11 =
-            //     evalBorderMode(Point2i(floored.x() + 1, floored.y() - 1));
-
-            // // TODO (Chat GPT)
+            // (Chat GPT)
             Point2i floored(floor(scaled.x() - 0.5f), floor(scaled.y() - 0.5f));
 
             Point2i p00 = evalBorderMode(Point2i(floored.x(), floored.y()));
@@ -98,13 +88,20 @@ public:
         int y;
 
         if (m_border == BorderMode::Repeat) {
-
-            x = ((imageCoords.x() % m_image->resolution().x()) +
-                 m_image->resolution().x()) %
-                m_image->resolution().x();
-            y = ((imageCoords.y() % m_image->resolution().y()) +
-                 m_image->resolution().y()) %
-                m_image->resolution().y();
+            // imageCoords might exceed the border
+            // x = ((imageCoords.x() % m_image->resolution().x()) +
+            //      m_image->resolution().x()) %
+            //     m_image->resolution().x();
+            // y = ((imageCoords.y() % m_image->resolution().y()) +
+            //      m_image->resolution().y()) %
+            //     m_image->resolution().y();
+            //  use a custom modulo function here that supports negative values
+            x = fmod(fmod(imageCoords.x(), m_image->resolution().x()) +
+                         m_image->resolution().x(),
+                     m_image->resolution().x());
+            y = fmod(fmod(imageCoords.y(), m_image->resolution().y()) +
+                         m_image->resolution().y(),
+                     m_image->resolution().y());
 
         } else if (m_border == BorderMode::Clamp) {
             // map between [-inf, inf]^2 -> [0,1]^2

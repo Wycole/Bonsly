@@ -9,7 +9,9 @@ struct DiffuseLobe {
     Color color;
 
     BsdfEval evaluate(const Vector &wo, const Vector &wi) const {
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+
+        return { color * Frame::absCosTheta(wi) * InvPi };
 
         // hints:
         // * copy your diffuse bsdf evaluate here
@@ -17,7 +19,12 @@ struct DiffuseLobe {
     }
 
     BsdfSample sample(const Vector &wo, Sampler &rng) const {
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+
+        // mainly copied from bsdf/diffuse.cpp 'sample'
+        // vector v is the reflected vectore from the diffuse area
+        Vector v = squareToCosineHemisphere(rng.next2D());
+        return BsdfSample{ v.normalized(), color };
 
         // hints:
         // * copy your diffuse bsdf evaluate here
@@ -30,7 +37,24 @@ struct MetallicLobe {
     Color color;
 
     BsdfEval evaluate(const Vector &wo, const Vector &wi) const {
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+
+        // copied from roughconductor.cpp evaluate
+        Color reflectance = color;
+
+        Vector w_m  = (wi + wo) / (wi + wo).length(); // the halfvector
+        float d_wm  = microfacet::evaluateGGX(alpha, w_m);
+        float g1_wi = microfacet::smithG1(alpha, w_m, wi);
+        float g1_wo = microfacet::smithG1(alpha, w_m, wo);
+
+        float demoninator =
+            1 / abs(4 * Frame::cosTheta(wo)); // why not the one below?
+        // float demoninator =
+        //     1 / abs(4 * Frame::cosTheta(wo) * Frame::cosTheta(wi));
+
+        Color together = reflectance * d_wm * g1_wi * g1_wo * demoninator;
+
+        return BsdfEval{ together };
 
         // hints:
         // * copy your roughconductor bsdf evaluate here
@@ -40,7 +64,23 @@ struct MetallicLobe {
     }
 
     BsdfSample sample(const Vector &wo, Sampler &rng) const {
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+
+        // copied from roughconductor.cpp sample
+        // reflectance R
+        Color reflectance = color;
+
+        Vector normal = microfacet::sampleGGXVNDF(
+            alpha, wo, rng.next2D()); // microfacet normal
+
+        // calculate g1_wi
+        Vector wi   = reflect(wo, normal);
+        float g1_wi = microfacet::smithG1(alpha, normal, wi);
+
+        // (the resulting sample weight is only a product of two factors)
+        Color weight = reflectance * g1_wi; // final weight
+
+        return BsdfSample{ .wi = wi, .weight = weight };
 
         // hints:
         // * copy your roughconductor bsdf sample here
@@ -102,7 +142,11 @@ public:
         PROFILE("Principled")
 
         const auto combination = combine(uv, wo);
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+
+        BsdfEval diffuse = combination.diffuse.evaluate(wo, wi);
+        BsdfEval metal   = combination.metallic.evaluate(wo, wi);
+        return BsdfEval{ diffuse.value + metal.value };
 
         // hint: evaluate `combination.diffuse` and `combination.metallic` and
         // combine their results
@@ -113,21 +157,47 @@ public:
         PROFILE("Principled")
 
         const auto combination = combine(uv, wo);
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+
+        float prob_diffuse = combination.diffuseSelectionProb;
+
+        // decide which lobe to sample
+        if (rng.next() < prob_diffuse) { // sample the diffuse lobe
+            BsdfSample sampling = combination.diffuse.sample(wo, rng);
+            if (prob_diffuse != 0) {
+                sampling.weight = sampling.weight / prob_diffuse;
+            } else {
+                return BsdfSample::invalid();
+            }
+            return sampling;
+
+        } else { // sample the metallic lobe
+            BsdfSample sampling = combination.metallic.sample(wo, rng);
+            if (1 - prob_diffuse != 0) {
+                float prob_metallic = 1 - prob_diffuse;
+                sampling.weight     = sampling.weight / prob_metallic;
+            } else {
+                return BsdfSample::invalid();
+            }
+            return sampling;
+        }
 
         // hint: sample either `combination.diffuse` (probability
         // `combination.diffuseSelectionProb`) or `combination.metallic`
     }
 
     std::string toString() const override {
-        return tfm::format("Principled[\n"
-                           "  baseColor = %s,\n"
-                           "  roughness = %s,\n"
-                           "  metallic  = %s,\n"
-                           "  specular  = %s,\n"
-                           "]",
-                           indent(m_baseColor), indent(m_roughness),
-                           indent(m_metallic), indent(m_specular));
+        return tfm::format(
+            "Principled[\n"
+            "  baseColor = %s,\n"
+            "  roughness = %s,\n"
+            "  metallic  = %s,\n"
+            "  specular  = %s,\n"
+            "]",
+            indent(m_baseColor),
+            indent(m_roughness),
+            indent(m_metallic),
+            indent(m_specular));
     }
 };
 

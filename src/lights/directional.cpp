@@ -8,13 +8,13 @@ class DirectionalLight final : public Light {
 
 public:
     DirectionalLight(const Properties &properties) : Light(properties) {
-        direction = properties.get<Vector>("direction");
+        direction = properties.get<Vector>("direction").normalized();
         power     = properties.get<Color>("intensity");
     }
 
     DirectLightSample sampleDirect(const Point &origin,
                                    Sampler &rng) const override {
-        return DirectLightSample{ direction.normalized(), power, Infinity };
+        return DirectLightSample{ direction, power, Infinity };
     }
 
     bool canBeIntersected() const override { return false; }

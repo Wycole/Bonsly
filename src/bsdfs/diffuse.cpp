@@ -12,12 +12,30 @@ public:
 
     BsdfEval evaluate(const Point2 &uv, const Vector &wo,
                       const Vector &wi) const override {
-        return { m_albedo->evaluate(uv) * abs(Frame::cosTheta(wi)) * InvPi };
+
+        // check if incoming and outgoing are in the same hemisphere, if not,
+        // invalid (for pathtracer test)
+        if (Frame::sameHemisphere(wo, wi) == false) {
+            return BsdfEval::invalid();
+        }
+
+        return { m_albedo->evaluate(uv) * Frame::absCosTheta(wi) * InvPi };
         // this is the frfr * |cosD|
     }
 
     BsdfSample sample(const Point2 &uv, const Vector &wo,
-                      Sampler &rng) const override{ NOT_IMPLEMENTED }
+                      Sampler &rng) const override {
+
+        // assignment_3 pathtracing_lights passed finally
+        // add this, then the shadow around the lamp shown
+        if (Frame::cosTheta(wo) <= 0) {
+            return BsdfSample::invalid();
+        }
+
+        // vector v is the reflected vectore from the diffuse area
+        Vector v = squareToCosineHemisphere(rng.next2D());
+        return BsdfSample{ v.normalized(), m_albedo->evaluate(uv) };
+    }
 
     std::string toString() const override {
         return tfm::format(

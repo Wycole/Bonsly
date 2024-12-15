@@ -21,8 +21,22 @@ public:
         // extremely specular distributions (alpha values below 10^-3)
         const auto alpha = std::max(float(1e-3), sqr(m_roughness->scalar(uv)));
 
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+        Color reflectance = m_reflectance->evaluate(uv);
 
+        Vector w_m  = (wi + wo) / (wi + wo).length(); // the halfvector
+        float d_wm  = microfacet::evaluateGGX(alpha, w_m);
+        float g1_wi = microfacet::smithG1(alpha, w_m, wi);
+        float g1_wo = microfacet::smithG1(alpha, w_m, wo);
+
+        float demoninator =
+            1 / abs(4 * Frame::cosTheta(wo)); // why not the one below?
+        // float demoninator =
+        //     1 / abs(4 * Frame::cosTheta(wo) * Frame::cosTheta(wi));
+
+        Color together = reflectance * d_wm * g1_wi * g1_wo * demoninator;
+
+        return BsdfEval{ together };
         // hints:
         // * the microfacet normal can be computed from `wi' and `wo'
     }
@@ -31,7 +45,23 @@ public:
                       Sampler &rng) const override {
         const auto alpha = std::max(float(1e-3), sqr(m_roughness->scalar(uv)));
 
-        NOT_IMPLEMENTED
+        // NOT_IMPLEMENTED
+        //
+
+        // reflectance R
+        Color reflectance = m_reflectance->evaluate(uv);
+
+        Vector normal = microfacet::sampleGGXVNDF(
+            alpha, wo, rng.next2D()); // microfacet normal
+
+        // calculate g1_wi
+        Vector wi   = reflect(wo, normal);
+        float g1_wi = microfacet::smithG1(alpha, normal, wi);
+
+        // (the resulting sample weight is only a product of two factors)
+        Color weight = reflectance * g1_wi; // final weight
+
+        return BsdfSample{ .wi = wi, .weight = weight };
 
         // hints:
         // * do not forget to cancel out as many terms from your equations as

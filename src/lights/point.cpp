@@ -16,7 +16,7 @@ public:
                                    Sampler &rng) const override {
         // NOT_IMPLEMENTED
         Vector wi        = Vector(query_point - origin);
-        float vector_dot = wi.dot(wi);
+        float vector_dot = wi.lengthSquared(); // wi.dot(wi);
         Color intensity  = Inv4Pi * power / vector_dot;
         Color weight     = intensity;
 

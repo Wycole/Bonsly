@@ -6,11 +6,11 @@
 namespace lightwave {
 
 void Instance::transformFrame(SurfaceEvent &surf, const Vector &wo) const {
-    surf.tangent = surf.tangent.normalized();
+    surf.tangent = m_transform->apply(surf.tangent).normalized();
     surf.shadingNormal =
         m_transform->applyNormal(surf.shadingNormal).normalized();
-    surf.shadingFrame().bitangent =
-        surf.shadingNormal.cross(surf.tangent).normalized();
+    surf.geometryNormal =
+        m_transform->applyNormal(surf.geometryNormal).normalized();
     surf.position = m_transform->apply(surf.position);
 }
 
@@ -62,6 +62,9 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
     // space To do so we multiply by whatever value our unit vector got
     // stretched when going to local space
     float tFactor = localRay.direction.length();
+    if (tFactor == 0) {
+        return false;
+    }
     its.t *= tFactor;
     localRay = localRay.normalized();
 
