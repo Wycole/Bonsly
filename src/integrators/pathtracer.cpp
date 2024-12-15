@@ -34,10 +34,11 @@ public:
                 break;
             }
 
-            // check if the scene has lights  (next event estimation)
+            // check if the scene has lights
             if (m_scene->hasLights()) {
 
                 LightSample lightSample = m_scene->sampleLight(rng);
+
                 if (!lightSample.isInvalid()) {
                     if (!lightSample.light->canBeIntersected()) {
 
@@ -79,6 +80,7 @@ public:
             if (bsdf.isInvalid()) {
                 return accum;
             }
+
             weight *= bsdf.weight;
             // sample invalid, return emission color
 

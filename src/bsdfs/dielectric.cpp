@@ -30,8 +30,10 @@ public:
         Vector normal = Vector(0, 0, 1);
 
         if (Frame::cosTheta(wo) < 0) {
-            ior    = 1 / ior;
-            normal = -normal;
+            if (ior != 0) {
+                ior    = 1 / ior;
+                normal = -normal;
+            }
         }
 
         // fresnel coefficients
