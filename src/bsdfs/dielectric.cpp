@@ -47,7 +47,15 @@ public:
         }
 
         // refract wo around the normal
-        Vector wi      = refract(wo, normal, ior);
+        Vector wi = refract(wo, normal, ior);
+
+        // Feedback of checking if a zero vector was returned
+        if (wi.isZero()) {
+            // if refraction fails, fallback to reflection
+            wi = reflect(wo, normal);
+            return BsdfSample{ wi, m_reflectance->evaluate(uv) };
+        }
+
         auto refracter = m_transmittance->evaluate(uv) / (ior * ior);
         // upper thing makes the code run faster on my pc
         return BsdfSample{ wi, refracter };

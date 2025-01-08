@@ -29,12 +29,12 @@ public:
         float g1_wi = microfacet::smithG1(alpha, w_m, wi);
         float g1_wo = microfacet::smithG1(alpha, w_m, wo);
 
-        float demoninator =
+        float denominator =
             1 / abs(4 * Frame::cosTheta(wo)); // why not the one below?
         // float demoninator =
         //     1 / abs(4 * Frame::cosTheta(wo) * Frame::cosTheta(wi));
 
-        Color together = reflectance * d_wm * g1_wi * g1_wo * demoninator;
+        Color together = reflectance * d_wm * g1_wi * g1_wo * denominator;
 
         return BsdfEval{ together };
         // hints:
@@ -55,7 +55,13 @@ public:
             alpha, wo, rng.next2D()); // microfacet normal
 
         // calculate g1_wi
-        Vector wi   = reflect(wo, normal);
+        Vector wi = reflect(wo, normal); //
+
+        // Feedback: ensure wi is in the same hemisphere as the surface normal
+        if (!Frame::sameHemisphere(wo, wi)) {
+            return BsdfSample::invalid();
+        }
+
         float g1_wi = microfacet::smithG1(alpha, normal, wi);
 
         // (the resulting sample weight is only a product of two factors)
