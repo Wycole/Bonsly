@@ -7,6 +7,17 @@ namespace lightwave {
 
 void Instance::transformFrame(SurfaceEvent &surf, const Vector &wo) const {
     surf.tangent = m_transform->apply(surf.tangent).normalized();
+    if (m_normal != NULL) {
+        auto colortonorm = m_normal.get()->evaluate(surf.uv).data();
+        // I get the colours here, to change from (0, 1) to (-1, 1)
+        // Tutor said lightwave has 0 to 1 for a colour.
+        Vector norm;
+        norm.x()           = colortonorm[0] * 2 - 1;
+        norm.y()           = colortonorm[1] * 2 - 1;
+        norm.z()           = colortonorm[2] * 2 - 1;
+        norm               = surf.shadingFrame().toWorld(norm);
+        surf.shadingNormal = norm;
+    }
     surf.shadingNormal =
         m_transform->applyNormal(surf.shadingNormal).normalized();
     surf.geometryNormal =
