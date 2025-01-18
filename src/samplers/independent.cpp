@@ -21,27 +21,30 @@ class Independent : public Sampler {
 
 public:
     Independent(const Properties &properties) : Sampler(properties) {
-        m_seed = properties.get<int>("seed", std::getenv("reference") ? 1337 : 420);
+        m_seed =
+            properties.get<int>("seed", std::getenv("reference") ? 1337 : 420);
     }
 
     void seed(int sampleIndex) override { m_pcg.seed(m_seed, sampleIndex); }
 
     void seed(const Point2i &pixel, int sampleIndex) override {
-        const uint64_t a = hash::fnv1a(pixel.x(), pixel.y(), sampleIndex, m_seed);
+        const uint64_t a =
+            hash::fnv1a(pixel.x(), pixel.y(), sampleIndex, m_seed);
         m_pcg.seed(a);
     }
 
-    float next() override { return m_pcg.nextFloat(); }
+    float next() override { return m_pcg.nextFloat(); } 
 
     ref<Sampler> clone() const override {
         return std::make_shared<Independent>(*this);
     }
 
     std::string toString() const override {
-        return tfm::format("Independent[\n"
-                           "  count = %d\n"
-                           "]",
-                           m_samplesPerPixel);
+        return tfm::format(
+            "Independent[\n"
+            "  count = %d\n"
+            "]",
+            m_samplesPerPixel);
     }
 };
 
