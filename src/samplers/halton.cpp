@@ -42,10 +42,16 @@ public:
     }
 
     void seed(const Point2i &pixel, int sampleIndex) override {
-        const uint64_t a =
-            hash::fnv1a(pixel.x(), pixel.y(), sampleIndex, m_seed);
+        // const uint64_t a =
+        //     hash::fnv1a(pixel.x(), pixel.y(), sampleIndex, m_seed);
 
-        // not done yet
+        const uint64_t a = (uint64_t(pixel.x()) << 32) ^ pixel.y();
+
+        m_base_prime = 2;
+        sample_index = sampleIndex;
+
+        m_pcg.seed(m_seed, a);
+        offset = m_pcg.nextFloat();
     }
 
     float next() override {
