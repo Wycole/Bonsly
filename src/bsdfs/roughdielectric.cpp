@@ -22,119 +22,66 @@ public:
     BsdfEval evaluate(const Point2 &uv, const Vector &wo,
                       const Vector &wi) const override {
 
-        // // everything from rough conductor
-        // const auto alpha = std::max(float(1e-3),
-        // sqr(m_roughness->scalar(uv)));
-
-        // Color reflectance = m_reflectance->evaluate(uv);
-
-        // Vector w_m  = (wi + wo) / (wi + wo).length(); // the halfvector
-        // float d_wm  = microfacet::evaluateGGX(alpha, w_m);
-        // float g1_wi = microfacet::smithG1(alpha, w_m, wi);
-        // float g1_wo = microfacet::smithG1(alpha, w_m, wo);
-
-        // float denominator =
-        //     1 / abs(4 * Frame::cosTheta(wo)); // why not the one below?
-        // // float demoninator =
-        // //     1 / abs(4 * Frame::cosTheta(wo) * Frame::cosTheta(wi));
-
-        // Color together = reflectance * d_wm * g1_wi * g1_wo * denominator;
-
-        // return BsdfEval{ together };
+        // everything from rough conductor
         const auto alpha = std::max(float(1e-3), sqr(m_roughness->scalar(uv)));
-        float ior        = m_ior->scalar(uv);
-        Vector ht;
-        bool reflect = Frame::sameHemisphere(wo, wi);
 
-        if (reflect) {
-            ht = (wi + wo).normalized();
-        } else {
-            ht = (wi + wo * ior).normalized();
-        }
+        Color reflectance = m_reflectance->evaluate(uv);
 
-        float F = fresnelDielectric(wi.dot(ht), ior);
-        // float F = fresnelDielectric(Frame::cosTheta(wo), ior); old version
-        float g1_wi = microfacet::smithG1(alpha, ht, wi);
-        float g1_wo = microfacet::smithG1(alpha, ht, wo);
-        float d_wm  = microfacet::evaluateGGX(alpha, ht);
+        Vector w_m  = (wi + wo) / (wi + wo).length(); // the halfvector
+        float d_wm  = microfacet::evaluateGGX(alpha, w_m);
+        float g1_wi = microfacet::smithG1(alpha, w_m, wi);
+        float g1_wo = microfacet::smithG1(alpha, w_m, wo);
 
-        if (reflect) {
-            float value =
-                g1_wi * g1_wo * F * d_wm / (4 * Frame::absCosTheta(wo));
-            return BsdfEval{ value * m_reflectance->evaluate(uv) };
-        } else {
-            float fraction = wi.dot(ht) + ior * wo.dot(ht);
-            float value    = g1_wi * g1_wo * (1 - F) * d_wm * ior * ior *
-                          abs(wi.dot(ht)) * abs(wo.dot(ht)) /
-                          abs(Frame::cosTheta(wo) * fraction * fraction);
-            return BsdfEval{ value * m_transmittance->evaluate(uv) };
-        }
+        float denominator =
+            1 / abs(4 * Frame::cosTheta(wo)); // why not the one below?
+        // float demoninator =
+        //     1 / abs(4 * Frame::cosTheta(wo) * Frame::cosTheta(wi));
+
+        Color together = reflectance * d_wm * g1_wi * g1_wo * denominator;
+
+        return BsdfEval{ together };
     }
 
     BsdfSample sample(const Point2 &uv, const Vector &wo,
                       Sampler &rng) const override {
 
-        // float ior = m_ior->scalar(uv);
-        // // Vector normal = Vector(0, 0, 1);
+        float ior = m_ior->scalar(uv);
+        // Vector normal = Vector(0, 0, 1);
 
-        // const auto alpha = std::max(float(1e-3),
-        // sqr(m_roughness->scalar(uv))); Vector normal    =
-        // microfacet::sampleGGXVNDF(alpha, wo, rng.next2D());
-
-        // // from dielectric
-        // if (Frame::cosTheta(wo) < 0) {
-        //     if (ior != 0) {
-        //         ior    = 1 / ior;
-        //         normal = -normal;
-        //     }
-        // }
-        // // fresnel coefficients
-        // // float F = fresnelDielectric(normal.dot(wo), ior);
-        // float F = fresnelDielectric(wo.z(), ior);
-
-        // // reflect
-        // if (rng.next() < F) {
-        //     Vector wi = reflect(wo, normal);
-        //     return BsdfSample{ wi, m_reflectance->evaluate(uv) };
-        // }
-
-        // // refractence / transmittance
-        // // refract wo around the normal
-        // Vector wi = refract(wo, normal, ior);
-
-        // // checking if a zero vector was returned
-        // if (wi.isZero()) {
-        //     // if refraction fails, fallback to reflection
-        //     wi = reflect(wo, normal);
-        //     return BsdfSample{ wi, m_reflectance->evaluate(uv) };
-        // }
-
-        // float g1     = microfacet::smithG1(alpha, normal, wi);
-        // Color weight = (m_transmittance->evaluate(uv) / (ior * ior)) * g1;
-
-        // return BsdfSample{ wi, weight };
-        float ior        = m_ior->scalar(uv);
         const auto alpha = std::max(float(1e-3), sqr(m_roughness->scalar(uv)));
         Vector normal    = microfacet::sampleGGXVNDF(alpha, wo, rng.next2D());
-        // if the ray is entering the medium, we need to flip the ior and the
-        // normal
-        if (Frame::cosTheta(wo) < 0) {
-            ior = 1 / ior;
-        }
-        // calculate the fresnel coefficients
-        float F = fresnelDielectric(normal.dot(wo), ior);
 
-        // reflectance
-        if (rng.next() < F) {
-            Vector wi    = reflect(wo, normal);
-            float g1     = microfacet::smithG1(alpha, normal, wi);
-            Color weight = m_reflectance->evaluate(uv) * g1;
-            return BsdfSample{ wi, weight };
+        // from dielectric
+        if (Frame::cosTheta(wo) < 0) {
+            if (ior != 0) {
+                ior    = 1 / ior;
+                normal = -normal;
+            }
         }
-        // transmittance
-        Vector wi    = refract(wo, normal, ior);
+        // fresnel coefficients
+        // float F = fresnelDielectric(normal.dot(wo), ior);
+        float F = fresnelDielectric(wo.z(), ior);
+
+        // reflect
+        if (rng.next() < F) {
+            Vector wi = reflect(wo, normal);
+            return BsdfSample{ wi, m_reflectance->evaluate(uv) };
+        }
+
+        // refractence aka(?) transmittance
+        // refract wo around the normal
+        Vector wi = refract(wo, normal, ior);
+
+        // checking if a zero vector was returned
+        if (wi.isZero()) {
+            // if refraction fails, fallback to reflection
+            wi = reflect(wo, normal);
+            return BsdfSample{ wi, m_reflectance->evaluate(uv) };
+        }
+
         float g1     = microfacet::smithG1(alpha, normal, wi);
         Color weight = (m_transmittance->evaluate(uv) / (ior * ior)) * g1;
+
         return BsdfSample{ wi, weight };
     }
 
