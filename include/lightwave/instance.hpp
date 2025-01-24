@@ -45,6 +45,9 @@ class Instance : public Shape {
     /// @brief Gives the shading normal if there is shading normal, (based on
     /// the texture of course)
     ref<Texture> m_normal;
+    /// @brief Gives the alpha value if there is alpha masking alpha, (based on
+    /// the texture of course)
+    ref<Texture> m_alpha;
 
     /// @brief Transforms the frame from object coordinates to world
     /// coordinates.
@@ -58,6 +61,9 @@ public:
         m_transform = properties.getOptionalChild<Transform>();
         if (properties.has("normal")) {
             m_normal = properties.get<Texture>("normal", NULL);
+        }
+        if (properties.has("alpha")) {
+            m_alpha = properties.get<Texture>("alpha", NULL);
         }
         m_visible = false;
     }

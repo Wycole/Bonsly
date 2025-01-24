@@ -28,7 +28,7 @@
 
 
         <instance>
-            <shape type="mesh" filename="../meshes/bunny.bob" />
+            <shape type="mesh" filename="../meshes/bunny.ply" />
             <bsdf type="diffuse">
                 <texture name="albedo" type="constant" value="1" />
             </bsdf>

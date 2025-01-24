@@ -54,6 +54,7 @@ inline void validateIntersection(const Intersection &its) {
 
 bool Instance::intersect(const Ray &worldRay, Intersection &its,
                          Sampler &rng) const {
+
     if (!m_transform) {
         // fast path, if no transform is needed
         const Ray localRay        = worldRay;
@@ -62,7 +63,7 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
             its.instance = this;
             validateIntersection(its);
         }
-        return wasIntersected;
+        return (wasIntersected);
     }
 
     const float previousT = its.t;
@@ -88,7 +89,20 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
     // * how does its.t need to change?
 
     const bool wasIntersected = m_shape->intersect(localRay, its, rng);
-    if (wasIntersected) {
+    bool alphaintersected     = true;
+    // make it so that the alpha doesnt change the uv coordinates/intersects it
+    // or whatever
+
+    if (m_alpha != NULL) {
+        Intersection alphaits = its;
+        Color alphaint        = m_alpha.get()->evaluate(alphaits.uv);
+        float alphavals       = alphaint[0] + alphaint[1] + alphaint[2];
+        if (alphavals < rng.next()) {
+            alphaintersected = false;
+        }
+    }
+    if (wasIntersected && alphaintersected) {
+
         // now its.t is local space (and its new value)
         // now its.normal, its.tangent etc are all local space as well
         //
@@ -103,7 +117,7 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
         its.t = previousT;
     }
 
-    return wasIntersected;
+    return (wasIntersected && alphaintersected);
 }
 
 Bounds Instance::getBoundingBox() const {
