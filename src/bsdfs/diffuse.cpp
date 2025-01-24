@@ -26,14 +26,18 @@ public:
     BsdfSample sample(const Point2 &uv, const Vector &wo,
                       Sampler &rng) const override {
 
+        // vector v is the reflected vectore from the diffuse area
+        Vector v = squareToCosineHemisphere(rng.next2D());
+
         // assignment_3 pathtracing_lights passed finally
         // add this, then the shadow around the lamp shown
         if (Frame::cosTheta(wo) <= 0) {
             return BsdfSample::invalid();
+            // v.normalized() = -v.normalized();
+            // try but doesnt work (for feedback)
         }
 
-        // vector v is the reflected vectore from the diffuse area
-        Vector v = squareToCosineHemisphere(rng.next2D());
+        ;
         return BsdfSample{ v.normalized(), m_albedo->evaluate(uv) };
     }
 

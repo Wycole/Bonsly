@@ -16,7 +16,8 @@ public:
         if (cos < 0) {
             c = Color::black();
         } else {
-            c = m_emission->evaluate(uv) * clamp(0.f, 1.f, cos);
+            // c = m_emission->evaluate(uv) * clamp(0.f, 1.f, cos);
+            c = m_emission->evaluate(uv); // Feedback: no cosine term here
         }
 
         return EmissionEval{ c };
