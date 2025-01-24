@@ -22,6 +22,7 @@ public:
         offset       = 0.0f;
     }
 
+    // radical inverse function phi_p
     double radicalInv(int a, int base) {
         double reversed = 0;
         double InvBase  = 1.0 / base;
