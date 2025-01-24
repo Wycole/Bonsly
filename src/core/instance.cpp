@@ -7,6 +7,17 @@ namespace lightwave {
 
 void Instance::transformFrame(SurfaceEvent &surf, const Vector &wo) const {
     surf.tangent = m_transform->apply(surf.tangent).normalized();
+    if (m_normal != NULL) {
+        auto colortonorm = m_normal.get()->evaluate(surf.uv).data();
+        // I get the colours here, to change from (0, 1) to (-1, 1)
+        // Tutor said lightwave has 0 to 1 for a colour.
+        Vector norm;
+        norm.x()           = colortonorm[0] * 2 - 1;
+        norm.y()           = colortonorm[1] * 2 - 1;
+        norm.z()           = colortonorm[2] * 2 - 1;
+        norm               = surf.shadingFrame().toWorld(norm);
+        surf.shadingNormal = norm;
+    }
     surf.shadingNormal =
         m_transform->applyNormal(surf.shadingNormal).normalized();
     surf.geometryNormal =
@@ -43,6 +54,7 @@ inline void validateIntersection(const Intersection &its) {
 
 bool Instance::intersect(const Ray &worldRay, Intersection &its,
                          Sampler &rng) const {
+
     if (!m_transform) {
         // fast path, if no transform is needed
         const Ray localRay        = worldRay;
@@ -51,7 +63,7 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
             its.instance = this;
             validateIntersection(its);
         }
-        return wasIntersected;
+        return (wasIntersected);
     }
 
     const float previousT = its.t;
@@ -77,7 +89,20 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
     // * how does its.t need to change?
 
     const bool wasIntersected = m_shape->intersect(localRay, its, rng);
-    if (wasIntersected) {
+    bool alphaintersected     = true;
+    // make it so that the alpha doesnt change the uv coordinates/intersects it
+    // or whatever
+
+    if (m_alpha != NULL) {
+        Intersection alphaits = its;
+        Color alphaint        = m_alpha.get()->evaluate(alphaits.uv);
+        float alphavals       = alphaint[0] + alphaint[1] + alphaint[2];
+        if (alphavals < rng.next()) {
+            alphaintersected = false;
+        }
+    }
+    if (wasIntersected && alphaintersected) {
+
         // now its.t is local space (and its new value)
         // now its.normal, its.tangent etc are all local space as well
         //
@@ -92,7 +117,7 @@ bool Instance::intersect(const Ray &worldRay, Intersection &its,
         its.t = previousT;
     }
 
-    return wasIntersected;
+    return (wasIntersected && alphaintersected);
 }
 
 Bounds Instance::getBoundingBox() const {

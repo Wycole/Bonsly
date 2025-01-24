@@ -12,13 +12,13 @@ class Sphere : public Shape {
         // float theta = acos(position.z() /
         //     sqrt(position.x() * position.x() + position.y() * position.y() +
         //     position.z() * position.z()));
-        float theta = asin(position.y()); // from the link-> this was acos, made
-                                          // it into asin and it works
-        float phi = atan2(position.z(), position.x());
+        float theta = acos(position.y()); // from the link-> this was acos,
+                                          // made it into asin and it works
+        float phi = atan2(-position.z(), position.x());
 
-        surf.uv.x() = 0.5 + phi * Inv2Pi;
+        surf.uv.x() = (phi - Pi) * Inv2Pi;
         // upper was 2*pi, same thing but changed it still
-        surf.uv.y() = 0.5 + theta * InvPi; // was theta/pi
+        surf.uv.y() = theta * InvPi; // was theta/pi
         // test runtime gets lower-> code is faster
         // so i change divisions into mult by invpi
 
@@ -28,10 +28,13 @@ class Sphere : public Shape {
         // surf.tangent = Vector{1, 0, 0};
         Vector x_axis = { 1.0f, 0.0f, 0.0f };
         if (surf.shadingNormal == x_axis) {
-            surf.tangent = Vector{ 0.0f, 1.0f, 0.0f };
+            surf.tangent = Vector{ 0.0f, 0.0f, 1.0f };
         } else {
-            surf.tangent = surf.shadingNormal.cross(x_axis).normalized();
+            // surf.tangent = surf.shadingNormal.cross(x_axis).normalized();
+            surf.tangent = Vector{ 1, 0, 0 };
         }
+        surf.tangent = Vector{ 1, 0, 0 };
+
         surf.pdf = 1.0f / (4.0f * M_PI);
     }
 

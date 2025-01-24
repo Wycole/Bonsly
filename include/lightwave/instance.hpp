@@ -42,6 +42,12 @@ class Instance : public Shape {
     /// @brief Tracks whether this instance has been added to the scene, i.e.,
     /// could be hit by ray tracing.
     bool m_visible;
+    /// @brief Gives the shading normal if there is shading normal, (based on
+    /// the texture of course)
+    ref<Texture> m_normal;
+    /// @brief Gives the alpha value if there is alpha masking alpha, (based on
+    /// the texture of course)
+    ref<Texture> m_alpha;
 
     /// @brief Transforms the frame from object coordinates to world
     /// coordinates.
@@ -53,6 +59,12 @@ public:
         m_bsdf      = properties.getOptionalChild<Bsdf>();
         m_emission  = properties.getOptionalChild<Emission>();
         m_transform = properties.getOptionalChild<Transform>();
+        if (properties.has("normal")) {
+            m_normal = properties.get<Texture>("normal", NULL);
+        }
+        if (properties.has("alpha")) {
+            m_alpha = properties.get<Texture>("alpha", NULL);
+        }
         m_visible = false;
     }
 
@@ -67,6 +79,9 @@ public:
     /// @brief Returns the light object that contains this instance (or null if
     /// this instance is not part of any area light).
     Light *light() const { return m_light; }
+
+    /// @brief Returns the texture mapping normal
+    Texture *normal() const { return m_normal.get(); }
 
     /// @brief Returns whether this instance has been added to the scene, i.e.,
     /// could be hit by ray tracing.
@@ -119,8 +134,7 @@ public:
             indent(m_shape),
             indent(m_bsdf),
             indent(m_emission),
-            indent(m_transform)
-        );
+            indent(m_transform));
     }
 };
 
