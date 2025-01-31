@@ -21,6 +21,7 @@ public:
         if (xchecker == 0) {
             if (ychecker == 0) {
                 return color0;
+                // return color1;
             }
             return color1;
         }
@@ -28,6 +29,7 @@ public:
             return color1;
         }
         return color0;
+        // return color1;
     }
 
     std::string toString() const override {

@@ -12,15 +12,13 @@ class Sphere : public Shape {
         // float theta = acos(position.z() /
         //     sqrt(position.x() * position.x() + position.y() * position.y() +
         //     position.z() * position.z()));
-        float theta = acos(position.y()); // from the link-> this was acos,
-                                          // made it into asin and it works
-        float phi = atan2(-position.z(), position.x());
+        float theta = acos(position.y());
+        float phi   = atan2(-position.z(), position.x());
 
+        // surf.uv.x() = 0.5 + phi * Inv2Pi;
         surf.uv.x() = (phi - Pi) * Inv2Pi;
         // upper was 2*pi, same thing but changed it still
-        surf.uv.y() = theta * InvPi; // was theta/pi
-        // test runtime gets lower-> code is faster
-        // so i change divisions into mult by invpi
+        surf.uv.y() = theta * InvPi;
 
         surf.shadingNormal  = Vector(position).normalized();
         surf.geometryNormal = surf.shadingNormal;

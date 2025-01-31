@@ -1,4 +1,4 @@
-<test type="image" id="halton_sampler_bunny">
+<test type="image" id="halton_bunny_detail">
     <integrator type="direct">
         <scene id="scene">
             <camera type="perspective" id="camera">
@@ -10,7 +10,7 @@
 
                 <transform>
                     <rotate axis="1,0,0" angle="-2.5"/>
-                    <translate z="-5"/>
+                    <translate x="-0.5" y="0.8" z="-2"/>
                 </transform>
             </camera>
 
@@ -41,6 +41,6 @@
             </instance>
         </scene>
         <!-- <sampler type="independent" count="64"/>  test is with independent sampler !!! -->
-        <sampler type="halton" count="64"/> 
+        <sampler type="halton" count="128"/> 
     </integrator>
 </test>
