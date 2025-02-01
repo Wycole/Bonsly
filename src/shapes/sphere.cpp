@@ -99,11 +99,20 @@ public:
     }
 
     Point getCentroid() const override { return Point(0); }
-    AreaSample sampleArea(Sampler &rng) const override{
-        NOT_IMPLEMENTED // leave it for later
-    } std::string toString() const override {
-        return "Sphere[]";
+
+    AreaSample sampleArea(Sampler &rng) const override {
+        // NOT_IMPLEMENTED // leave it for later
+
+        Point2 next = rng.next2D();
+
+        Point position = squareToUniformSphere(next);
+
+        AreaSample sample;
+        populate(sample, position);
+        return sample;
     }
+
+    std::string toString() const override { return "Sphere[]"; }
 };
 } // namespace lightwave
 REGISTER_SHAPE(Sphere, "sphere")

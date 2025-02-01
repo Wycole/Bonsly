@@ -1,4 +1,4 @@
-#ifdef LW_WITH_OIDN
+// #ifdef LW_WITH_OIDN
 
 #include <OpenImageDenoise/oidn.hpp>
 #include <lightwave.hpp>
@@ -14,7 +14,7 @@ private:
 public:
     Denoising(const Properties &properties) : Postprocess(properties) {
         m_albedo  = properties.get<Image>("albedo");
-        m_normals = properties.get<Image>("normal");
+        m_normals = properties.get<Image>("normals");
     }
 
     void execute() override {
@@ -67,9 +67,10 @@ public:
             indent(m_output),
             indent(m_normals),
             indent(m_albedo));
+        // indent(m_output));
     }
 };
 } // namespace lightwave
 
-REGISTER_POSTPROCESSING(Denoising, "denoising")
-#endif
+REGISTER_POSTPROCESS(Denoising, "denoising")
+// #endif
