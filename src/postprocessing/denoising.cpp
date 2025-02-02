@@ -59,6 +59,9 @@ public:
         // upper code so we get the error message if there is any
 
         m_output->save(); // save output image
+
+        Streaming stream{ *m_output }; //
+        stream.update();
     }
 
     // std::string toString() const override { return "Denosing[\n", "]"; }
