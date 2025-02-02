@@ -81,7 +81,8 @@ file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
 set(MY_TARGET_NAME yoldas) # Change `unnamed` to your favorite executable name
 # ######################
 
-find_package(OpenImageDenoise)
+find_package(OpenImageDenoise REQUIRED)
+include_directories(${OpenImageDenoise_INCLUDE_DIRS})
 
 add_executable(${MY_TARGET_NAME} ${SOURCE_FILES})
 target_compile_definitions(${MY_TARGET_NAME} PUBLIC "${FEATURES};${EXTRA_DEFINES}")
