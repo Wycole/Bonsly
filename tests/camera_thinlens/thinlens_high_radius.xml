@@ -1,4 +1,4 @@
-<test type="image" id="thinlens">
+<test type="image" id="thinlens_high_radius">
     <scene id="scene">
         <camera type="thinlens" id="camera">
             <integer name="width" value="600" />
@@ -6,10 +6,13 @@
 
             <string name="fovAxis" value="x" />
             <float name="fov" value="40" />
-            <!-- The reference uses two parameters - radius and focalDistance for the thinlens
-            camera
-            You can change those to match your naming convention as well. -->
-            <float name="radius" value="0.05" />
+            
+            <!-- original -->
+            <!-- <float name="radius" value="0.05" />
+            <float name="focalDistance" value="3" />  -->
+           
+
+            <float name="radius" value="0.09" />
             <float name="focalDistance" value="3" />
 
 

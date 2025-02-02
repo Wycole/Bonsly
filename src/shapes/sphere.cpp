@@ -12,15 +12,13 @@ class Sphere : public Shape {
         // float theta = acos(position.z() /
         //     sqrt(position.x() * position.x() + position.y() * position.y() +
         //     position.z() * position.z()));
-        float theta = acos(position.y()); // from the link-> this was acos,
-                                          // made it into asin and it works
-        float phi = atan2(-position.z(), position.x());
+        float theta = acos(position.y());
+        float phi   = atan2(-position.z(), position.x());
 
+        // surf.uv.x() = 0.5 + phi * Inv2Pi;
         surf.uv.x() = (phi - Pi) * Inv2Pi;
         // upper was 2*pi, same thing but changed it still
-        surf.uv.y() = theta * InvPi; // was theta/pi
-        // test runtime gets lower-> code is faster
-        // so i change divisions into mult by invpi
+        surf.uv.y() = theta * InvPi;
 
         surf.shadingNormal  = Vector(position).normalized();
         surf.geometryNormal = surf.shadingNormal;
@@ -101,11 +99,20 @@ public:
     }
 
     Point getCentroid() const override { return Point(0); }
-    AreaSample sampleArea(Sampler &rng) const override{
-        NOT_IMPLEMENTED // leave it for later
-    } std::string toString() const override {
-        return "Sphere[]";
+
+    AreaSample sampleArea(Sampler &rng) const override {
+        // NOT_IMPLEMENTED // leave it for later
+
+        Point2 next = rng.next2D();
+
+        Point position = squareToUniformSphere(next);
+
+        AreaSample sample;
+        populate(sample, position);
+        return sample;
     }
+
+    std::string toString() const override { return "Sphere[]"; }
 };
 } // namespace lightwave
 REGISTER_SHAPE(Sphere, "sphere")
