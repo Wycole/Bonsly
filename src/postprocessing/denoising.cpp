@@ -35,7 +35,7 @@ public:
         device.commit();
 
         oidn::BufferRef colorBuf =
-            device.newBuffer(width * height * 3 * sizeof(float)); //
+            device.newBuffer(width * height * 3 * sizeof(float));
 
         // reate a denoising filter
         oidn::FilterRef filter = device.newFilter("RT");
@@ -54,9 +54,9 @@ public:
 
         filter.execute(); // run the denoising filter on the input image
 
-        const char *errorMessage; //
-        if (device.getError(errorMessage) != oidn::Error::None)
-            std::cout << "Error: " << errorMessage << std::endl;
+        if (device.getError() != oidn::Error::None)
+            std::cout << "Error: " << std::endl;
+        // upper code so we get the error message if there is any
 
         m_output->save(); // save output image
 
