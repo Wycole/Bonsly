@@ -9,6 +9,5 @@
 //     AreaLight(const Properties &properties) {
 //         m_instance = properties.getChild<Instance>();
 //     }
-
 // };
 // } // namespace lightwave
