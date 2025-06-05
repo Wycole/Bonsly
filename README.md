@@ -1,3 +1,5 @@
+Run all tests by:
+<code>cmake</code> and then  <code>python ./run_tests.py</code>
 # lightwave
 
 Welcome to _lightwave_, an educational framework for writing ray tracers that can render photo-realistic images!
