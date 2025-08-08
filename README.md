@@ -1,13 +1,11 @@
 # Bonsly Raytracer 
-**Bonsly Raytracer** is a raytracing rendering done by Togla Onay and me for the lecture [Computer Graphics](https://graphics.cg.uni-saarland.de/courses/cg1-2024/index.html) during the winter semester 2024/2025 at Saarland University. The lecture team provided the Lightwave framework, and students are supposed to implement many different features above it. Many things such as perspective camera model, point light and directional light, as well as denoising are handled by our renderer.
+**Bonsly Raytracer** is a pathtracing renderer done by Togla Onay and me for the lecture [Computer Graphics](https://graphics.cg.uni-saarland.de/courses/cg1-2024/index.html) during the winter semester 2024/2025 at Saarland University. The lecture team provided the Lightwave framework, and students are supposed to implement many different features above it. Many things such as perspective camera model, point light and directional light, as well as denoising are handled by our renderer.
 
 More about Lightwave framework can be found [here](https://github.com/Wycole/Bonsly/blob/main/docs/README.md).
 
-Also, visit our project website [yoldas](https://wycole.github.io/yoldas-website/) for more information!
-
 ## Submission for the Rendering Competition
-
-
+![final](features/website_images/final.jpeg)
+Visit our project website [yoldas](https://wycole.github.io/yoldas-website/) for more information!
 ## Features
 * Perspective camera model
 * Triangle meshes(polygon), rectangle, and sphere primtives
@@ -72,7 +70,7 @@ After building the project with CMake you can either run all local tests:
 ```
 or render your own XML scene file using:
 ```bash
-  <path/to/scene> scene.xml
+  python ./run_tests.py <path/to/scene>.xml
 ```
 
 ## Copyright and Credits
